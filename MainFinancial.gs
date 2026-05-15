@@ -222,3 +222,36 @@ function budget_submitUpdate(data, planKey) {
   budget_applyFormulas(sheet, target);
   return { success: true };
 }
+
+function budget_submitReserveAdd(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const idData = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  
+  let pIdx = -1; let mSub = 0; let insAt = -1;
+  const pIdStr = data.parentId.toString();
+  for (let i = 0; i < idData.length; i++) {
+    const cur = idData[i][0].toString();
+    if (cur === pIdStr) { pIdx = i + 5; insAt = pIdx; }
+    if (cur.startsWith(pIdStr + ".")) {
+      const s = parseInt(cur.split(".")[1]); if (s > mSub) mSub = s;
+      insAt = i + 5;
+    }
+  }
+  if (pIdx === -1) throw new Error("Parent ID not found");
+  const nId = pIdStr + "." + (mSub + 1);
+  sheet.insertRowAfter(insAt);
+  const nr = insAt + 1;
+  sheet.getRange(nr, 1).setValue(nId);
+  sheet.getRange(nr, 2).setValue(data.type === 'PO' ? 'PO' : ("กันเงินเพิ่ม" + (data.remark ? " " + data.remark : "")));
+  sheet.getRange(nr, 3).setValue(new Date()); 
+  sheet.getRange(nr, 7).setValue(data.refNo);
+  sheet.getRange(nr, 8).setValue(data.letterDate);
+  sheet.getRange(nr, 9).setValue(data.name);
+  sheet.getRange(nr, 10).setValue(data.dept);
+  sheet.getRange(nr, 11).setValue(data.catCode);
+  sheet.getRange(nr, 13).setValue(data.desc);
+  if (data.col) sheet.getRange(nr, parseInt(data.col)).setValue(parseFloat(data.amount));
+  budget_applyFormulas(sheet, nr);
+  return { success: true, id: nId };
+}
