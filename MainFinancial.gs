@@ -1,0 +1,206 @@
+const PLAN_CONFIG = {
+  '1.ฝนหลวง':     '1E43wKRlEa1xKM5l_zSDdstmAKPtDgw05rwJVeRLgTYk',
+  '2.ด้านการบิน':   '1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc',
+  '3.แก้ปัญหาฝุ่น':   '1iOX9ISvptU2UpMbVNPTuYHbA4df11dytCHxFYKoSQxg',
+  '4.บรรเทาลูกเห็บ': '1SM0GYznjAKPOQT-itypsk83n7l5rx9ibWzKcLGZb4H4'
+};
+
+const DEFAULT_SHEET_NAME = '1.ฝน'; // The tab name inside EACH spreadsheet
+
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    const planKey = e.parameter.planKey || '1.ฝนหลวง'; 
+    if (action === 'getInitialData') return ContentService.createTextOutput(JSON.stringify(budget_getInitialData(planKey))).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) { return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON); }
+}
+
+function doPost(e) {
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const action = params.action;
+    const planKey = params.planKey || '1.ฝนหลวง';
+    let res;
+    if (action === 'submitReserve') res = budget_submitReserve(params.data, planKey);
+    else if (action === 'submitDeduct') res = budget_submitDeduct(params.data, planKey);
+    else if (action === 'submitOffset') res = budget_submitOffset(params.data, planKey);
+    else if (action === 'submitUpdate') res = budget_submitUpdate(params.data, planKey);
+    return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) { return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON); }
+}
+
+function budget_getTargetSheet(planKey) { 
+  const ssId = PLAN_CONFIG[planKey] || PLAN_CONFIG['1.ฝนหลวง'];
+  const ss = SpreadsheetApp.openById(ssId);
+  // We assume the actual work sheet is the first one or named specifically
+  return ss.getSheets()[0]; 
+}
+
+function budget_formatThaiDate(date) {
+  if (!date || !(date instanceof Date) || isNaN(date)) return date;
+  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  return `${date.getDate()} ${months[date.getMonth()]} ${(date.getFullYear() + 543).toString().slice(-2)}`;
+}
+
+function budget_applyFormulas(sheet, row) {
+  sheet.getRange(row, 12).setFormula(`=IF(E${row}="","",TEXT(E${row},"mmm"))`);
+  const tripletCols = [16,19,22,25,28,31,34,37,40,43,46,49,52,55,58,61,64,67,70,73,76,79,82,85,88,91,94,97,100,103];
+  tripletCols.forEach(c => {
+    const colName = sheet.getRange(row, c-1).getA1Notation().replace(/\d+/, '');
+    sheet.getRange(row, c).setFormula(`=IF($E${row}<>"",${colName}${row},"")`);
+  });
+  const reserveRange = ["N","Q","T","W","Z","AC","AF","AI","AL","AO","AR","AU","AX","BA","BD","BG","BJ","BM","BP","BS","BV","BY","CB","CE","CH","CK","CN","CQ","CT","CW"];
+  const deductRange  = ["O","R","U","X","AA","AD","AG","AJ","AM","AP","AS","AV","AY","BB","BE","BH","BK","BN","BQ","BT","BW","BZ","CC","CF","CI","CL","CO","CR","CU","CX"];
+  const balanceRange = ["P","S","V","Y","AB","AE","AH","AK","AN","AQ","AT","AW","AZ","BC","BF","BI","BL","BO","BR","BU","BX","CA","CD","CG","CJ","CM","CP","CS","CV","CY"];
+  sheet.getRange(row, 104).setFormula("=" + reserveRange.map(c => `${c}${row}`).join("+")); // CZ
+  sheet.getRange(row, 105).setFormula("=" + deductRange.map(c => `${c}${row}`).join("+"));  // DA
+  sheet.getRange(row, 106).setFormula("=" + balanceRange.map(c => `${c}${row}`).join("+")); // DB
+  sheet.getRange(row, 107).setFormula(`=M${row}`); // DC
+}
+
+function budget_getInitialData(planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 5) return { entries: [], todayThai: budget_formatThaiDate(new Date()) };
+  const headers = sheet.getRange(2, 1, 2, lastCol).getValues();
+  const data = sheet.getRange(5, 1, lastRow - 4, lastCol).getValues();
+  const entries = data.filter(r => r[0]).map(row => {
+    let catCode = "", catName = "", amount = 0, col = 0;
+    for (let c = 13; c < lastCol; c++) {
+      if (headers[0][c] && row[c] !== "" && typeof row[c] === 'number') {
+        catCode = headers[0][c]; catName = headers[1][c]; amount = row[c]; col = c+1; break;
+      }
+    }
+    return { id: row[0], type: row[1], date: budget_formatThaiDate(row[2]), letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), refNo: row[6], name: row[8], dept: row[9], desc: row[12], catCode, catName, amount, col, colF: row[5], liquidateRefNo: row[3] };
+  }).reverse();
+  return { entries, todayThai: budget_formatThaiDate(new Date()) };
+}
+
+function budget_submitReserve(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const ids = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  let max = 0; ids.forEach(r => { let v = parseInt(r[0]); if(v > max) max = v; });
+  const nextId = max + 1;
+  const nr = lastRow + 1;
+  sheet.getRange(nr, 1).setValue(nextId);
+  if (data.type === 'PO') sheet.getRange(nr, 2).setValue('PO'); else sheet.getRange(nr, 2).setValue('');
+  sheet.getRange(nr, 3).setValue(new Date()); 
+  sheet.getRange(nr, 7).setValue(data.refNo);
+  sheet.getRange(nr, 8).setValue(data.letterDate);
+  sheet.getRange(nr, 9).setValue(data.name);
+  sheet.getRange(nr, 10).setValue(data.dept);
+  sheet.getRange(nr, 11).setValue(data.catCode);
+  sheet.getRange(nr, 13).setValue(data.desc);
+  if (data.col) sheet.getRange(nr, parseInt(data.col)).setValue(parseFloat(data.amount));
+  budget_applyFormulas(sheet, nr);
+  return { success: true, id: nextId };
+}
+
+function budget_submitDeduct(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const idData = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  
+  if (data.mode === 'PO') {
+    let pIdx = -1; let mSub = 0; let insAt = -1;
+    const pIdStr = data.id.toString();
+    for (let i = 0; i < idData.length; i++) {
+        const cur = idData[i][0].toString();
+        if (cur === pIdStr) { pIdx = i + 5; insAt = pIdx; }
+        if (cur.startsWith(pIdStr + ".")) {
+            const s = parseInt(cur.split(".")[1]); if (s > mSub) mSub = s;
+            insAt = i + 5;
+        }
+    }
+    if (pIdx === -1) throw new Error("Parent ID not found");
+    const nId = pIdStr + "." + (mSub + 1);
+    sheet.insertRowAfter(insAt);
+    const nr = insAt + 1;
+    sheet.getRange(nr, 1).setValue(nId);
+    sheet.getRange(nr, 2).setValue("PO");
+    if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
+    sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
+    [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+    if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+    const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+    for (let c = 13; c < pVals.length; c++) {
+      if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
+        sheet.getRange(nr, c+2).setValue(parseFloat(data.amount)); break;
+      }
+    }
+    budget_applyFormulas(sheet, nr);
+    return { success: true, id: nId };
+  } else {
+    let target = -1; for (let i=0; i<idData.length; i++) if(idData[i][0] == data.id) { target = i + 5; break; }
+    if (target === -1) throw new Error("ID not found");
+    if (data.name) sheet.getRange(target, 9).setValue(data.name);
+    if (data.colF) sheet.getRange(target, 6).setValue(data.colF);
+    sheet.getRange(target, 4).setValue(data.liquidateRefNo);
+    const rowVals = sheet.getRange(target, 1, 1, sheet.getLastColumn()).getValues()[0];
+    for (let c = 13; c < rowVals.length; c++) {
+      if (sheet.getRange(2, c+1).getValue() && rowVals[c] !== "" && typeof rowVals[c] === 'number') {
+        sheet.getRange(target, c+2).setValue(parseFloat(data.amount)); break;
+      }
+    }
+    budget_applyFormulas(sheet, target);
+    return { success: true };
+  }
+}
+
+function budget_submitOffset(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const idData = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  let pIdx = -1; let mSub = 0; let insAt = -1;
+  const pIdStr = data.id.toString();
+  for (let i = 0; i < idData.length; i++) {
+    const cur = idData[i][0].toString();
+    if (cur === pIdStr) { pIdx = i + 5; insAt = pIdx; }
+    if (cur.startsWith(pIdStr + ".")) {
+      const s = parseInt(cur.split(".")[1]); if (s > mSub) mSub = s;
+      insAt = i + 5;
+    }
+  }
+  if (pIdx === -1) throw new Error("Parent ID not found");
+  const nId = pIdStr + "." + (mSub + 1);
+  sheet.insertRowAfter(insAt);
+  const nr = insAt + 1;
+  sheet.getRange(nr, 1).setValue(nId);
+  sheet.getRange(nr, 2).setValue("หักล้างเงินยืม");
+  if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
+  sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
+  [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+  const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+  for (let c = 13; c < pVals.length; c++) {
+    if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
+      sheet.getRange(nr, c+2).setValue(Math.abs(parseFloat(data.amount || pVals[c])) * -1); break;
+    }
+  }
+  budget_applyFormulas(sheet, nr);
+  return { success: true, id: nId };
+}
+
+function budget_submitUpdate(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const ids = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  let target = -1; for (let i=0; i<ids.length; i++) if(ids[i][0] == data.id) { target = i + 5; break; }
+  if (target === -1) throw new Error("ID not found");
+  sheet.getRange(target, 4).setValue(data.liquidateRefNo || "");
+  sheet.getRange(target, 6).setValue(data.colF || "");
+  sheet.getRange(target, 7).setValue(data.refNo || "");
+  sheet.getRange(target, 8).setValue(data.letterDate || ""); 
+  sheet.getRange(target, 9).setValue(data.name || "");
+  sheet.getRange(target, 10).setValue(data.dept || "");
+  sheet.getRange(target, 11).setValue(data.catCode || "");
+  sheet.getRange(target, 13).setValue(data.desc || "");
+  if (data.col && data.amount) {
+    sheet.getRange(target, parseInt(data.col)).setValue(parseFloat(data.amount));
+  }
+  budget_applyFormulas(sheet, target);
+  return { success: true };
+}
