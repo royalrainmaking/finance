@@ -95,6 +95,7 @@
       justify-content: space-between;
       padding: 0 40px;
       transition: 0.3s;
+      border-top: 4px solid var(--primary);
     }
 
     .status-pill {
@@ -154,16 +155,16 @@
     }
 
     .plan-tab {
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
       color: var(--text-muted);
       cursor: pointer;
       background: #f1f5f9;
       white-space: nowrap;
       transition: 0.2s;
-      border: 1px solid transparent;
+      border: 2px solid #e2e8f0;
     }
 
     .plan-tab:hover {
@@ -174,6 +175,8 @@
       background: var(--primary-light);
       color: var(--primary-dark);
       border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--primary);
     }
 
     .view-container {
@@ -244,6 +247,7 @@
       border-radius: 12px;
       font-weight: 700;
       cursor: pointer;
+      transition: 0.2s;
     }
 
     .submit-btn:disabled {
@@ -292,6 +296,25 @@
       font-size: 18px;
       font-weight: 800;
       border: 1px solid var(--primary);
+      transition: 0.3s;
+    }
+
+    .status-tag {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .status-po {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-normal {
+      background: #e0f2fe;
+      color: #075985;
     }
 
     .meta-row {
@@ -324,6 +347,18 @@
       border-radius: 28px;
       padding: 32px;
       text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-btn {
+      padding: 12px 32px;
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
     }
 
     #loader {
@@ -343,12 +378,10 @@
       border: 4px solid #f1f5f9;
       border-top: 4px solid var(--primary);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 1.s linear infinite;
     }
 
     @keyframes spin {
-      box-sizing: border-box;
-
       to {
         transform: rotate(360deg);
       }
@@ -385,7 +418,6 @@
       color: white;
     }
 
-    /* Splash Screen */
     #splash {
       position: absolute;
       inset: 0;
@@ -399,21 +431,6 @@
 
     #splash.hidden {
       display: none;
-    }
-
-    /* Make Plan Tabs More Visiable */
-    .plan-tab {
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 800;
-      border: 2px solid #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .plan-tab.active {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--primary);
     }
   </style>
 </head>
@@ -433,19 +450,20 @@
     </div>
   </div>
 
-
   <aside class="sidebar">
-    <div class="logo">
-      <img src="https://catalog.royalrain.go.th/uploads/group/2022-01-05-023815.957138logoryrweb.png" alt="Logo"
-        style="height: 60px; width: auto; display: block; margin-bottom: 10px;">
-      <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
+    <div class="sidebar-top">
+      <div class="logo">
+        <img src="https://catalog.royalrain.go.th/uploads/group/2022-01-05-023815.957138logoryrweb.png" alt="Logo"
+          style="height: 60px; width: auto; display: block; margin-bottom: 10px;">
+        <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
+      </div>
+      <nav class="nav-menu">
+        <div class="nav-item active" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
+        <div class="nav-item" id="nav-deduct" onclick="setView('deduct', this)">💰 ตัดยอด</div>
+        <div class="nav-item" id="nav-offset" onclick="setView('offset', this)">🔄 หักล้าง</div>
+        <div class="nav-item" id="nav-edit" onclick="setView('edit', this)">🛠 แก้ไขรายการ</div>
+      </nav>
     </div>
-    <nav class="nav-menu">
-      <div class="nav-item active" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
-      <div class="nav-item" onclick="setView('deduct', this)">💰 ตัดยอด</div>
-      <div class="nav-item" onclick="setView('offset', this)">🔄 หักล้าง</div>
-      <div class="nav-item" onclick="setView('edit', this)">🛠 แก้ไขรายการ</div>
-    </nav>
     <div
       style="padding:20px; font-size:10px; color:var(--text-muted); margin:20px; background:#f1f5f9; border-radius:15px;">
       <label>API URL:</label><input type="text" id="apiInput" style="width:100%; margin-top:5px; font-size:10px;">
@@ -480,6 +498,8 @@
             ด้านบน<br>เพื่อเริ่มต้นเชื่อมต่อฐานข้อมูล</p>
         </div>
       </div>
+
+      <!-- RESERVE VIEW -->
       <div id="view-reserve" class="app-view active">
         <div class="form-wrapper">
           <form id="reserveForm">
@@ -556,6 +576,7 @@
         </div>
       </div>
 
+      <!-- DEDUCT VIEW -->
       <div id="view-deduct" class="app-view">
         <div class="form-wrapper">
           <form id="deductForm">
@@ -586,11 +607,100 @@
           </form>
         </div>
       </div>
+
+      <!-- OFFSET VIEW -->
+      <div id="view-offset" class="app-view">
+        <div class="form-wrapper">
+          <form id="offsetForm">
+            <div class="field full" style="margin-bottom:15px;"><label>รหัสรายการยืมเดิม (ID)</label><input
+                type="number" name="id" id="offsetSearchId" oninput="validateForm(this.value, 'O')" required>
+              <div id="prvO" class="preview-box"></div>
+            </div>
+            <div class="form-grid">
+              <div class="field full"><label>ชื่อผู้เบิก (แก้ไขได้)</label><input type="text" name="name" id="nmO">
+              </div>
+              <div class="field"><label>เลขที่หนังสือหักล้าง (D)</label><input type="text" name="liquidateRefNo"
+                  required></div>
+              <div class="field"><label>เลขที่ระบบตัดยอด (F)</label><input type="text" name="colF"></div>
+              <div class="field full"><label>จำนวนเงินที่คืน (บาท)</label><input type="number" name="amount" step="0.01"
+                  required></div>
+            </div>
+            <button type="submit" id="btnO" class="submit-btn" disabled>บันทึกการหักล้างยืมเงิน (.1)</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- EDIT VIEW -->
+      <div id="view-edit" class="app-view">
+        <div class="form-wrapper">
+          <form id="editForm">
+            <div class="field full" style="margin-bottom:15px;"><label>ค้นหารหัส ID ที่ต้องการแก้ไข</label><input
+                type="number" name="id" oninput="loadEdit(this.value)" required>
+              <div id="editPrv" class="preview-box"></div>
+            </div>
+            <div id="editFields" style="display:none;">
+              <div class="form-grid">
+                <div class="field"><label>เลขที่หนังสือ (G)</label><input type="text" name="refNo" id="eRef"></div>
+                <div class="field"><label>วันที่ลงหนังสือ (H)</label><input type="text" name="letterDate" id="eDate">
+                </div>
+                <div class="field"><label>ชื่อผู้เบิก/ยืม (I)</label><input type="text" name="name" id="eName"></div>
+                <div class="field"><label>ฝ่าย (J)</label><select name="dept" id="eDept">
+                    <option value="ฝบบ.">ฝบบ.</option>
+                    <option value="กวบ.">กวบ.</option>
+                    <option value="กกบ.">กกบ.</option>
+                    <option value="กอบ.">กอบ.</option>
+                    <option value="กซอ.">กซอ.</option>
+                    <option value="สบน.">สบน.</option>
+                    <option value="สบค.">สบค.</option>
+                  </select></div>
+                <div class="field"><label>เลขหนังสือตัดยอด/หักล้าง (D)</label><input type="text" name="liquidateRefNo"
+                    id="eLiq"></div>
+                <div class="field"><label>เลขที่ระบบตัดยอด (F)</label><input type="text" name="colF" id="eF"></div>
+                <div class="field"><label>หมวดงบประมาณ (K)</label>
+                  <select name="col" id="eCol" class="catSelect" data-hidden="catCodeE" onchange="syncCode(this)">
+                    <option value="">-- เลือก --</option>
+                    <optgroup label="2.1.1 ค่าตอบแทน">
+                      <option value="14" data-code="A1">A1 - ค่าอาหารทำการนอกเวลา</option>
+                      <option value="17" data-code="A2">A2 - ค่าตอบแทนคณะกรรมการ</option>
+                      <option value="20" data-code="A3">A3 - ค่าตอบแทนผู้ปฏิบัติงานบนอากาศยาน</option>
+                      <option value="23" data-code="A4">A4 - ค่าสมนาคุณวิทยากร</option>
+                    </optgroup>
+                    <optgroup label="2.1.2 ค่าใช้สอย">
+                      <option value="26" data-code="B1">B1 - ค่าเบี้ยเลี้ยงที่พักพาหนะ</option>
+                      <option value="29" data-code="B2">B2 - ค่าซ่อมแซมยานพาหนะ</option>
+                      <option value="32" data-code="B3">B3 - ค่าซ่อมแซมครุภัณฑ์</option>
+                      <option value="35" data-code="B4">B4 - ค่าซ่อมแซมสิ่งก่อสร้าง</option>
+                      <option value="38" data-code="B5">B5 - ค่าทำความสะอาด</option>
+                      <option value="41" data-code="B6">B6 - รักษาความปลอดภัย</option>
+                      <option value="44" data-code="B7">B7 - จ้างเหมาเอกชนดำเนินงาน</option>
+                      <option value="47" data-code="B8">B8 - ค่าสัมมนาและฝึกอบรม</option>
+                      <option value="50" data-code="B9">B9 - ค่าภาษี/ค่าธรรมเนียมศ</option>
+                      <option value="53" data-code="B10">B10 - ค่ารับรองและพิธีการ</option>
+                      <option value="56" data-code="B11">B11 - ค่าตรวจสุขภาพ</option>
+                      <option value="59" data-code="B12">B12 - ค่าใช้สอยอื่นๆ</option>
+                      <option value="62" data-code="B13">B13 - จ้างเหมาบริการอื่นๆ</option>
+                    </optgroup>
+                    <option value="104" data-code="2.2.1">2.2.1 - ค่าโทรศัพท์</option>
+                    <option value="119" data-code="3">3 - งบลงทุน</option>
+                  </select>
+                  <input type="hidden" name="catCode" id="catCodeE">
+                </div>
+                <div class="field"><label>จำนวนเงิน (บาท)</label><input type="number" name="amount" id="eAmt"
+                    step="0.01"></div>
+                <div class="field full"><label>รายละเอียดโครงการ (M)</label><textarea name="desc" id="eDesc"
+                    style="min-height:60px;"></textarea></div>
+              </div>
+              <button type="submit" class="submit-btn"
+                style="background:#f59e0b !important;">บันทึกการแก้ไขข้อมูล</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbwzaExiTHfrVh21pYygGhmJTqBTe0knxymOIHtPbJ7UxgRT9CNVCTNN_voE9KBGFUlx/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxjsWn2fQyt3qP1DP43ylhJoXExt4YCrsrx4nLJ5bumUSOu8WrfiQp0SRK1ASykbmsc/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -604,6 +714,7 @@
     function setStatus(state, text) {
       const dot = document.getElementById('statusDot');
       const label = document.getElementById('statusText');
+      if (!dot || !label) return;
       dot.className = 'status-dot';
       if (state === 'loading') dot.classList.add('loading');
       if (state === 'active') dot.classList.add('active');
@@ -654,15 +765,59 @@
       init();
     }
 
+    function createPreviewHTML(e, isError = false, errorMsg = "") {
+      const statusClass = e.type === 'PO' ? 'status-po' : 'status-normal';
+      const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : 'NORMAL';
+      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div><label>ยอดกันเงิน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
+    }
+
+    function validateForm(id, view) {
+      const prv = document.getElementById('prv' + view);
+      const btn = document.getElementById('btn' + view);
+      const nm = document.getElementById('nm' + view);
+      if (!id || !cache) { if (prv) prv.style.display = 'none'; if (btn) btn.disabled = true; return; }
+      const e = cache.entries.find(x => x.id == id);
+      if (!e) { prv.innerHTML = '<div class="preview-card error" style="text-align:center; padding:15px;">❌ ไม่พบรหัส ID นี้ในระบบ</div>'; prv.classList.add('active'); prv.style.display = 'block'; if (btn) btn.disabled = true; return; }
+      let isError = false; let errorMsg = "";
+      if (view === 'D') {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        if (mode === 'PO' && e.type !== 'PO') { isError = true; errorMsg = "⚠️ รายการนี้ไม่ใช่ PO (ไม่สามารถแทรกแถวจ่ายตาม PO ได้)"; }
+        if (mode === 'Normal' && e.type === 'PO') { isError = true; errorMsg = "⚠️ รายการนี้เป็น PO (ต้องเลือกโหมด 'จ่ายตาม PO' เท่านั้น)"; }
+        btn.disabled = isError; if (nm) nm.value = e.name;
+      } else { btn.disabled = false; if (nm) nm.value = e.name; }
+      prv.innerHTML = createPreviewHTML(e, isError, errorMsg); prv.classList.add('active'); prv.style.display = 'block';
+    }
+
+    function loadEdit(id) {
+      const fieldBox = document.getElementById('editFields'); const prv = document.getElementById('editPrv');
+      if (!id || !cache) { fieldBox.style.display = 'none'; prv.style.display = 'none'; return; }
+      const e = cache.entries.find(x => x.id == id);
+      if (e) {
+        fieldBox.style.display = 'block'; prv.style.display = 'none';
+        document.getElementById('eRef').value = e.refNo; document.getElementById('eDate').value = e.letterDateFormatted; document.getElementById('eName').value = e.name; document.getElementById('eDept').value = e.dept;
+        document.getElementById('eLiq').value = e.liquidateRefNo || ''; document.getElementById('eF').value = e.colF || ''; document.getElementById('eDesc').value = e.desc;
+        document.getElementById('eAmt').value = e.amount; document.getElementById('eCol').value = e.col; document.getElementById('catCodeE').value = e.catCode;
+      } else { fieldBox.style.display = 'none'; prv.innerHTML = '❌ ไม่พบไอดีนี้'; prv.className = 'preview-box'; prv.style.display = 'block'; }
+    }
+
     function syncCode(s) { document.getElementById(s.dataset.hidden).value = s.options[s.selectedIndex].dataset.code || ''; }
+
     function setView(v, el) {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active');
-      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active')); document.getElementById('view-' + v).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
+      const target = document.getElementById('view-' + v);
+      if (target) target.classList.add('active');
       document.getElementById('viewTitle').innerText = el.innerText;
     }
 
-    // Simplification for brevity in demonstration
-    document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { init(); e.target.reset(); } };
+    document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
+    document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย'); init(); } };
+    document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); init(); } };
+    document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitUpdate', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย'); init(); } };
+
+    function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
     window.onload = () => {
       document.getElementById('apiInput').value = API;
