@@ -1,11 +1,9 @@
 const PLAN_CONFIG = {
-  '1.ฝนหลวง':     '1E43wKRlEa1xKM5l_zSDdstmAKPtDgw05rwJVeRLgTYk',
-  '2.ด้านการบิน':   '1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc',
-  '3.แก้ปัญหาฝุ่น':   '1iOX9ISvptU2UpMbVNPTuYHbA4df11dytCHxFYKoSQxg',
-  '4.บรรเทาลูกเห็บ': '1SM0GYznjAKPOQT-itypsk83n7l5rx9ibWzKcLGZb4H4'
+  '1.ฝนหลวง':     { id: '1E43wKRlEa1xKM5l_zSDdstmAKPtDgw05rwJVeRLgTYk', sheet: '1.ฝน' },
+  '2.ด้านการบิน':   { id: '1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc', sheet: '2.บิน' },
+  '3.แก้ปัญหาฝุ่น':   { id: '1iOX9ISvptU2UpMbVNPTuYHbA4df11dytCHxFYKoSQxg', sheet: '3.ฝุ่น' },
+  '4.บรรเทาลูกเห็บ': { id: '1SM0GYznjAKPOQT-itypsk83n7l5rx9ibWzKcLGZb4H4', sheet: '4.ลูกเห็บ' }
 };
-
-const DEFAULT_SHEET_NAME = '1.ฝน'; // The tab name inside EACH spreadsheet
 
 function doGet(e) {
   try {
@@ -31,10 +29,11 @@ function doPost(e) {
 }
 
 function budget_getTargetSheet(planKey) { 
-  const ssId = PLAN_CONFIG[planKey] || PLAN_CONFIG['1.ฝนหลวง'];
-  const ss = SpreadsheetApp.openById(ssId);
-  // We assume the actual work sheet is the first one or named specifically
-  return ss.getSheets()[0]; 
+  const config = PLAN_CONFIG[planKey] || PLAN_CONFIG['1.ฝนหลวง'];
+  const ss = SpreadsheetApp.openById(config.id);
+  const sheet = ss.getSheetByName(config.sheet);
+  if (!sheet) throw new Error("ไม่พบชีทชื่อ '" + config.sheet + "' ในระบบแผน " + planKey);
+  return sheet; 
 }
 
 function budget_formatThaiDate(date) {
