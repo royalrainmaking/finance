@@ -474,6 +474,40 @@
       box-shadow: var(--shadow);
     }
 
+    .floating-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .sug-item {
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f9;
+      transition: 0.2s;
+    }
+
+    .sug-item:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .sug-item:last-child {
+      border-bottom: none;
+    }
+
     #splash {
       position: absolute;
       inset: 0;
@@ -576,7 +610,14 @@
                   <option value="สบน.">สบน.</option>
                   <option value="สบค.">สบค.</option>
                 </select></div>
-              <div class="field"><label>ชื่อผู้เบิก/ยืม</label><input type="text" name="name" required></div>
+              <div class="field" style="position:relative;">
+                <label>ชื่อผู้เบิก/ยืม</label>
+                <input type="text" name="name" id="name1" autocomplete="off"
+                  oninput="showFloatingSuggestions(this, 'sugN1', 'names')" required>
+                <div id="sugN1" class="floating-suggestions"></div>
+              </div>
+              <div class="field"><label>หมายเหตุ / เลขที่อ้างอิง (คอลัมน์ B)</label><input type="text" name="remark"
+                  placeholder="ใส่หมายเหตุเฉพาะรายการที่ไม่ใช่ PO"></div>
               <div class="field"><label>หมวดงบประมาณ</label>
                 <select name="col" class="catSelect" data-hidden="catCode1" onchange="syncCode(this)" required>
                   <option value="">-- เลือกหมวด --</option>
@@ -624,8 +665,13 @@
               <div class="field"><label>จำนวนเงินเบิก (บาท)</label><input type="number" name="amount" step="0.01"
                   required></div>
             </div>
-            <div class="field full" style="margin-bottom:20px;"><label>รายละเอียดโครงการ</label><textarea name="desc"
-                style="min-height:80px;"></textarea></div>
+            <div class="field full" style="margin-bottom:20px; position:relative;">
+              <label>รายละเอียดโครงการ</label>
+              <textarea name="desc" id="desc1" rows="5" autocomplete="off"
+                oninput="showFloatingSuggestions(this, 'sugD1', 'descs')"
+                placeholder="เริ่มพิมพ์เพื่อดูรายการแนะนำ..."></textarea>
+              <div id="sugD1" class="floating-suggestions"></div>
+            </div>
             <button type="submit" class="submit-btn" disabled>ยืนยันบันทึกเงินกันสำรอง</button>
           </form>
         </div>
@@ -744,8 +790,10 @@
                   </select>
                   <input type="hidden" name="catCode" id="catCodeE">
                 </div>
-                <div class="field"><label>จำนวนเงิน (บาท)</label><input type="number" name="amount" id="eAmt"
+                <div class="field"><label>จำนวนเงินกัน (บาท)</label><input type="number" name="amount" id="eAmt"
                     step="0.01"></div>
+                <div class="field"><label>จำนวนเงินตัดจ่าย (บาท)</label><input type="number" name="amountDeduct"
+                    id="eAmtD" step="0.01"></div>
                 <div class="field full"><label>รายละเอียดโครงการ (M)</label><textarea name="desc" id="eDesc"
                     style="min-height:60px;"></textarea></div>
               </div>
@@ -771,7 +819,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxjsWn2fQyt3qP1DP43ylhJoXExt4YCrsrx4nLJ5bumUSOu8WrfiQp0SRK1ASykbmsc/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbyU-tm7FFl8UJL7YtBQbWv6UhB-LhsyOwISQUHv99iH8u_VSNfZF0NUagmeAyitIa3V/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -823,10 +871,38 @@
       const d = await call('getInitialData');
       if (d) {
         cache = d; document.getElementById('dateDisplay').innerText = d.todayThai;
+        updateDataLists(d.entries);
         document.getElementById('splash').classList.add('hidden');
         document.querySelectorAll('.submit-btn').forEach(b => b.disabled = false);
       }
     }
+
+    function updateDataLists(entries) {
+      if (!entries) return;
+      window.recentNames = [...new Set(entries.map(e => (e.name || "").toString().trim()))].filter(Boolean).slice(0, 100);
+      window.recentDescs = [...new Set(entries.map(e => (e.desc || "").toString().trim()))].filter(Boolean).slice(0, 200);
+    }
+
+    function showFloatingSuggestions(input, sugId, type) {
+      const container = document.getElementById(sugId);
+      const val = input.value.trim().toLowerCase();
+      const source = type === 'names' ? window.recentNames : window.recentDescs;
+
+      if (val.length < 2 || !source) { container.style.display = 'none'; return; }
+
+      const matches = source.filter(d => d.toLowerCase().includes(val)).slice(0, 6);
+      if (matches.length === 0) { container.style.display = 'none'; return; }
+
+      container.innerHTML = matches.map(m => `<div class="sug-item" onclick="selectSug('${sugId}', '${input.id}', \`${m.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)">${m}</div>`).join('');
+      container.style.display = 'block';
+    }
+
+    function selectSug(sugId, inputId, val) {
+      document.getElementById(inputId).value = val;
+      document.getElementById(sugId).style.display = 'none';
+    }
+
+    function suggestDesc(select, targetId) { }
 
     function setPlan(el) {
       document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
@@ -844,7 +920,7 @@
     function createPreviewHTML(e, isError = false, errorMsg = "") {
       const statusClass = e.type === 'PO' ? 'status-po' : 'status-normal';
       const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
-      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div><label>ยอดวงเงิน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
+      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div style="background:var(--primary-light); padding:5px; border-radius:5px;"><label>เงินกัน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div style="background:#fff7ed; padding:5px; border-radius:5px;"><label>เงินตัดยอด/คืน:</label> <b style="color:#c2410c">${Number(e.amountDeduct || 0).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
     }
 
     function omniSearch(val, view) {
@@ -909,7 +985,9 @@
       document.getElementById('eRef').value = e.refNo; document.getElementById('eDate').value = e.letterDateFormatted;
       document.getElementById('eName').value = e.name; document.getElementById('eDept').value = e.dept;
       document.getElementById('eLiq').value = e.liquidateRefNo || ''; document.getElementById('eF').value = e.colF || '';
-      document.getElementById('eDesc').value = e.desc; document.getElementById('eAmt').value = e.amount;
+      document.getElementById('eDesc').value = e.desc;
+      document.getElementById('eAmt').value = e.amount;
+      document.getElementById('eAmtD').value = e.amountDeduct || 0;
       document.getElementById('eCol').value = e.col; document.getElementById('catCodeE').value = e.catCode;
     }
 
@@ -922,7 +1000,9 @@
     document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); init(); } };
     document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitUpdate', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย'); init(); } };
 
-    window.onload = () => { document.getElementById('apiInput').value = API; setStatus('ready', 'พร้อมเริ่มงาน'); };
+    window.onload = () => {
+      document.getElementById('apiInput').value = API; setStatus('ready', 'พร้อมเริ่มงาน');
+    };
   </script>
 </body>
 

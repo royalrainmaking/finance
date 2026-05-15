@@ -66,13 +66,30 @@ function budget_getInitialData(planKey) {
   const headers = sheet.getRange(2, 1, 2, lastCol).getValues();
   const data = sheet.getRange(5, 1, lastRow - 4, lastCol).getValues();
   const entries = data.filter(r => r[0]).map(row => {
-    let catCode = "", catName = "", amount = 0, col = 0;
-    for (let c = 13; c < lastCol; c++) {
-      if (headers[0][c] && row[c] !== "" && typeof row[c] === 'number') {
-        catCode = headers[0][c]; catName = headers[1][c]; amount = row[c]; col = c+1; break;
+    let catCode = "", catName = "", reserveAmount = 0, deductAmount = 0, col = 0;
+    for (let c = 13; c < lastCol; c += 3) {
+      if (headers[0][c]) {
+        const v1 = row[c+1]; // กันเงิน (Reserve) - Column O/R/U...
+        const v2 = row[c+2]; // ตัดยอด (Deduct) - Column P/S/V...
+        const hasV1 = (v1 !== "" && typeof v1 === 'number');
+        const hasV2 = (v2 !== "" && typeof v2 === 'number');
+        if (hasV1 || hasV2) {
+          catCode = headers[0][c];
+          catName = headers[1][c];
+          reserveAmount = hasV1 ? v1 : 0;
+          deductAmount = hasV2 ? v2 : 0;
+          col = c + 2; // Default to Reserve column for editing (Column O is index 14, 1-based: 15)
+          break;
+        }
       }
     }
-    return { id: row[0], type: row[1], date: budget_formatThaiDate(row[2]), letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), refNo: row[6], name: row[8], dept: row[9], desc: row[12], catCode, catName, amount, col, colF: row[5], liquidateRefNo: row[3] };
+    return { 
+      id: row[0], type: row[1], date: budget_formatThaiDate(row[2]), 
+      letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), 
+      refNo: row[6], name: row[8], dept: row[9], desc: row[12], 
+      catCode, catName, amount: reserveAmount, amountDeduct: deductAmount, 
+      col, colF: row[5], liquidateRefNo: row[3] 
+    };
   }).reverse();
   return { entries, todayThai: budget_formatThaiDate(new Date()) };
 }
@@ -85,7 +102,7 @@ function budget_submitReserve(data, planKey) {
   const nextId = max + 1;
   const nr = lastRow + 1;
   sheet.getRange(nr, 1).setValue(nextId);
-  if (data.type === 'PO') sheet.getRange(nr, 2).setValue('PO'); else sheet.getRange(nr, 2).setValue('');
+  sheet.getRange(nr, 2).setValue(data.type === 'PO' ? 'PO' : (data.remark || ""));
   sheet.getRange(nr, 3).setValue(new Date()); 
   sheet.getRange(nr, 7).setValue(data.refNo);
   sheet.getRange(nr, 8).setValue(data.letterDate);
@@ -197,8 +214,10 @@ function budget_submitUpdate(data, planKey) {
   sheet.getRange(target, 10).setValue(data.dept || "");
   sheet.getRange(target, 11).setValue(data.catCode || "");
   sheet.getRange(target, 13).setValue(data.desc || "");
-  if (data.col && data.amount) {
-    sheet.getRange(target, parseInt(data.col)).setValue(parseFloat(data.amount));
+  if (data.col) {
+    const baseCol = parseInt(data.col);
+    if (data.amount !== undefined) sheet.getRange(target, baseCol).setValue(data.amount === "" ? "" : parseFloat(data.amount));
+    if (data.amountDeduct !== undefined) sheet.getRange(target, baseCol + 1).setValue(data.amountDeduct === "" ? "" : parseFloat(data.amountDeduct));
   }
   budget_applyFormulas(sheet, target);
   return { success: true };
