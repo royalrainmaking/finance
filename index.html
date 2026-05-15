@@ -923,7 +923,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbwEdZdSUNlhDjUXHW0TdnTYMTENzxWYRSituWfQOVFaCH83CrnfcYM50QJtbdwv0ngh/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbzX0rp6hdKodpmJl7ptFIG65ZGPj3sjtC2Ag00snVjq1bk2evVkyDNZu1GdoTRdaADP/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -1125,7 +1125,14 @@
     document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitUpdate', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย'); init(); } };
 
     window.onload = () => {
-      document.getElementById('apiInput').value = API; setStatus('ready', 'พร้อมเริ่มงาน');
+      const input = document.getElementById('apiInput');
+      input.value = API;
+      input.onchange = () => {
+        API = input.value;
+        localStorage.setItem('budgetApiUrl', API);
+        setStatus('ready', 'อัปเดต API แล้ว');
+      };
+      setStatus('ready', 'พร้อมเริ่มงาน');
     };
   </script>
 </body>

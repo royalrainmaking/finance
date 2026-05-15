@@ -21,10 +21,11 @@ function doPost(e) {
     const planKey = params.planKey || '1.ฝนหลวง';
     let res;
     if (action === 'submitReserve') res = budget_submitReserve(params.data, planKey);
+    else if (action === 'submitReserveAdd') res = budget_submitReserveAdd(params.data, planKey);
     else if (action === 'submitDeduct') res = budget_submitDeduct(params.data, planKey);
     else if (action === 'submitOffset') res = budget_submitOffset(params.data, planKey);
     else if (action === 'submitUpdate') res = budget_submitUpdate(params.data, planKey);
-    return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify(res || { error: 'Action not found' })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) { return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON); }
 }
 
@@ -69,8 +70,8 @@ function budget_getInitialData(planKey) {
     let catCode = "", catName = "", reserveAmount = 0, deductAmount = 0, col = 0;
     for (let c = 13; c < lastCol; c += 3) {
       if (headers[0][c]) {
-        const v1 = row[c+1]; // กันเงิน (Reserve) - Column O/R/U...
-        const v2 = row[c+2]; // ตัดยอด (Deduct) - Column P/S/V...
+        const v1 = row[c];   // กันเงิน (Reserve) - Column N/Q/T...
+        const v2 = row[c+1]; // ตัดยอด (Deduct) - Column O/R/U...
         const hasV1 = (v1 !== "" && typeof v1 === 'number');
         const hasV2 = (v2 !== "" && typeof v2 === 'number');
         if (hasV1 || hasV2) {
@@ -78,7 +79,7 @@ function budget_getInitialData(planKey) {
           catName = headers[1][c];
           reserveAmount = hasV1 ? v1 : 0;
           deductAmount = hasV2 ? v2 : 0;
-          col = c + 2; // Default to Reserve column for editing (Column O is index 14, 1-based: 15)
+          col = c + 1; // 1-based index for getRange (A=1, N=14)
           break;
         }
       }
