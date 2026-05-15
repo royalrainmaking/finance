@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget Flow - Multi-File Hub</title>
+  <title>Budget Flow PRO - Advanced Mission Hub</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600&display=swap"
     rel="stylesheet">
@@ -77,6 +77,7 @@
     .nav-item.active {
       background: var(--primary);
       color: white;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .main-content {
@@ -194,6 +195,14 @@
 
     .app-view.active {
       display: block;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
     }
 
     .form-wrapper {
@@ -238,6 +247,12 @@
       transition: 0.2s;
     }
 
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+
     .submit-btn {
       width: 100%;
       padding: 14px;
@@ -274,6 +289,7 @@
       border-left: 6px solid var(--primary);
       padding: 20px;
       position: relative;
+      transition: 0.3s;
     }
 
     .preview-card.error {
@@ -296,7 +312,6 @@
       font-size: 18px;
       font-weight: 800;
       border: 1px solid var(--primary);
-      transition: 0.3s;
     }
 
     .status-tag {
@@ -347,7 +362,6 @@
       border-radius: 28px;
       padding: 32px;
       text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
     .modal-btn {
@@ -378,7 +392,7 @@
       border: 4px solid #f1f5f9;
       border-top: 4px solid var(--primary);
       border-radius: 50%;
-      animation: spin 1.s linear infinite;
+      animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
@@ -418,6 +432,48 @@
       color: white;
     }
 
+    .search-box {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 18px 25px 18px 55px;
+      border-radius: 18px;
+      border: 2px solid var(--border);
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      font-size: 20px;
+      color: var(--text-muted);
+    }
+
+    .search-result-item {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 15px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-result-item:hover {
+      transform: scale(1.01);
+      border-color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+
     #splash {
       position: absolute;
       inset: 0;
@@ -451,19 +507,18 @@
   </div>
 
   <aside class="sidebar">
-    <div class="sidebar-top">
-      <div class="logo">
-        <img src="https://catalog.royalrain.go.th/uploads/group/2022-01-05-023815.957138logoryrweb.png" alt="Logo"
-          style="height: 60px; width: auto; display: block; margin-bottom: 10px;">
-        <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item active" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
-        <div class="nav-item" id="nav-deduct" onclick="setView('deduct', this)">💰 ตัดยอด</div>
-        <div class="nav-item" id="nav-offset" onclick="setView('offset', this)">🔄 หักล้าง</div>
-        <div class="nav-item" id="nav-edit" onclick="setView('edit', this)">🛠 แก้ไขรายการ</div>
-      </nav>
+    <div class="logo">
+      <img src="https://catalog.royalrain.go.th/uploads/group/2022-01-05-023815.957138logoryrweb.png" alt="Logo"
+        style="height: 60px; width: auto; display: block; margin-bottom: 10px;">
+      <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
     </div>
+    <nav class="nav-menu">
+      <div class="nav-item active" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
+      <div class="nav-item" id="nav-deduct" onclick="setView('deduct', this)">💰 ตัดยอด</div>
+      <div class="nav-item" id="nav-offset" onclick="setView('offset', this)">🔄 หักล้าง</div>
+      <div class="nav-item" id="nav-edit" onclick="setView('edit', this)">🛠 แก้ไขรายการ</div>
+      <div class="nav-item" id="nav-search" onclick="setView('search', this)">🔍 ค้นหา/ประวัติ</div>
+    </nav>
     <div
       style="padding:20px; font-size:10px; color:var(--text-muted); margin:20px; background:#f1f5f9; border-radius:15px;">
       <label>API URL:</label><input type="text" id="apiInput" style="width:100%; margin-top:5px; font-size:10px;">
@@ -499,7 +554,7 @@
         </div>
       </div>
 
-      <!-- RESERVE VIEW -->
+      <!-- RESERVE -->
       <div id="view-reserve" class="app-view active">
         <div class="form-wrapper">
           <form id="reserveForm">
@@ -576,21 +631,22 @@
         </div>
       </div>
 
-      <!-- DEDUCT VIEW -->
+      <!-- DEDUCT -->
       <div id="view-deduct" class="app-view">
         <div class="form-wrapper">
           <form id="deductForm">
-            <div class="field full" style="margin-bottom:15px;"><label>รหัสรายการ (ID) เพื่อตัดยอด</label><input
-                type="number" name="id" id="deductSearchId" oninput="validateForm(this.value, 'D')" required>
+            <div class="field full" style="margin-bottom:15px;"><label>รหัสรายการ (ID) หรือเลขหนังสือ
+                เพื่อตัดยอด</label>
+              <input type="text" id="deductSearchId" placeholder="ID หรือ เลขที่หนังสือ..."
+                oninput="omniSearch(this.value, 'D')" required>
               <div id="prvD" class="preview-box"></div>
+              <input type="hidden" name="id" id="hiddenIdD">
             </div>
             <div class="field full"><label>รูปแบบการตัดจ่าย</label>
-              <div class="type-pill" id="deductModePill">
+              <div class="type-pill">
                 <input type="radio" name="mode" id="mNormal" value="Normal" checked
-                  onchange="validateForm(document.getElementById('deductSearchId').value, 'D')"><label
-                  for="mNormal">ปกติ (ทับรายการเดิม)</label>
-                <input type="radio" name="mode" id="mPO_Pay" value="PO"
-                  onchange="validateForm(document.getElementById('deductSearchId').value, 'D')"><label
+                  onchange="validateSearch('D')"><label for="mNormal">ปกติ (ทับรายการเดิม)</label>
+                <input type="radio" name="mode" id="mPO_Pay" value="PO" onchange="validateSearch('D')"><label
                   for="mPO_Pay">จ่ายตาม PO (แทรกแถวใหม่ .1)</label>
               </div>
             </div>
@@ -608,13 +664,15 @@
         </div>
       </div>
 
-      <!-- OFFSET VIEW -->
+      <!-- OFFSET -->
       <div id="view-offset" class="app-view">
         <div class="form-wrapper">
           <form id="offsetForm">
-            <div class="field full" style="margin-bottom:15px;"><label>รหัสรายการยืมเดิม (ID)</label><input
-                type="number" name="id" id="offsetSearchId" oninput="validateForm(this.value, 'O')" required>
+            <div class="field full" style="margin-bottom:15px;"><label>รหัสรายการยืมเดิม (ID) หรือเลขหนังสือ</label>
+              <input type="text" id="offsetSearchId" placeholder="ID หรือ เลขที่หนังสือ..."
+                oninput="omniSearch(this.value, 'O')" required>
               <div id="prvO" class="preview-box"></div>
+              <input type="hidden" name="id" id="hiddenIdO">
             </div>
             <div class="form-grid">
               <div class="field full"><label>ชื่อผู้เบิก (แก้ไขได้)</label><input type="text" name="name" id="nmO">
@@ -630,13 +688,14 @@
         </div>
       </div>
 
-      <!-- EDIT VIEW -->
+      <!-- EDIT -->
       <div id="view-edit" class="app-view">
         <div class="form-wrapper">
           <form id="editForm">
-            <div class="field full" style="margin-bottom:15px;"><label>ค้นหารหัส ID ที่ต้องการแก้ไข</label><input
-                type="number" name="id" oninput="loadEdit(this.value)" required>
-              <div id="editPrv" class="preview-box"></div>
+            <div class="field full" style="margin-bottom:15px;"><label>ค้นหา ID หรือเลขที่หนังสือ เพื่อแก้ไข</label>
+              <input type="text" oninput="omniSearch(this.value, 'E')" placeholder="ID / เลขที่หนังสือ...">
+              <div id="prvE" class="preview-box"></div>
+              <input type="hidden" name="id" id="hiddenIdE">
             </div>
             <div id="editFields" style="display:none;">
               <div class="form-grid">
@@ -696,6 +755,18 @@
           </form>
         </div>
       </div>
+
+      <!-- SEARCH & HISTORY -->
+      <div id="view-search" class="app-view">
+        <div class="search-box">
+          <input type="text" id="omniSearchInput"
+            placeholder="พิมพ์ ID, เลขที่หนังสือ, เลขตัดยอด หรือชื่อผู้ปฏิบัติงาน..."
+            oninput="performGlobalSearch(this.value)">
+        </div>
+        <div id="searchResultsContainer"></div>
+        <div id="searchDetail" style="margin-top: 30px;"></div>
+      </div>
+
     </div>
   </main>
 
@@ -759,70 +830,99 @@
 
     function setPlan(el) {
       document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      currentPlan = el.dataset.plan;
-      updateTheme(currentPlan);
-      init();
+      el.classList.add('active'); currentPlan = el.dataset.plan;
+      updateTheme(currentPlan); init();
+    }
+
+    function setView(v, el) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active');
+      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
+      const t = document.getElementById('view-' + v); if (t) t.classList.add('active');
+      document.getElementById('viewTitle').innerText = el.innerText;
     }
 
     function createPreviewHTML(e, isError = false, errorMsg = "") {
       const statusClass = e.type === 'PO' ? 'status-po' : 'status-normal';
-      const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : 'NORMAL';
-      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div><label>ยอดกันเงิน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
+      const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
+      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div><label>ยอดวงเงิน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
     }
 
-    function validateForm(id, view) {
-      const prv = document.getElementById('prv' + view);
-      const btn = document.getElementById('btn' + view);
-      const nm = document.getElementById('nm' + view);
-      if (!id || !cache) { if (prv) prv.style.display = 'none'; if (btn) btn.disabled = true; return; }
-      const e = cache.entries.find(x => x.id == id);
-      if (!e) { prv.innerHTML = '<div class="preview-card error" style="text-align:center; padding:15px;">❌ ไม่พบรหัส ID นี้ในระบบ</div>'; prv.classList.add('active'); prv.style.display = 'block'; if (btn) btn.disabled = true; return; }
-      let isError = false; let errorMsg = "";
+    function omniSearch(val, view) {
+      const prv = document.getElementById('prv' + view); if (!val || !cache) { prv.style.display = 'none'; return; }
+      const q = val.toString().toLowerCase();
+      const match = cache.entries.find(e => e.id.toString().toLowerCase() === q || e.refNo.toString().toLowerCase() === q || (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase() === q));
+      if (match) {
+        document.getElementById('hiddenId' + view).value = match.id;
+        if (view === 'E') loadEdit(match.id); else validateSearch(view, match);
+      } else { prv.innerHTML = '<div class="preview-card error" style="text-align:center;">❌ ไม่พบข้อมูลจาก ID หรือ เลขหนังสือนี้</div>'; prv.style.display = 'block'; }
+    }
+
+    function validateSearch(view, entry = null) {
+      const id = document.getElementById('hiddenId' + view).value;
+      const e = entry || cache.entries.find(x => x.id == id);
+      const prv = document.getElementById('prv' + view); const btn = document.getElementById('btn' + view); const nm = document.getElementById('nm' + view);
+      if (!e) { btn.disabled = true; return; }
+      let err = "";
       if (view === 'D') {
         const mode = document.querySelector('input[name="mode"]:checked').value;
-        if (mode === 'PO' && e.type !== 'PO') { isError = true; errorMsg = "⚠️ รายการนี้ไม่ใช่ PO (ไม่สามารถแทรกแถวจ่ายตาม PO ได้)"; }
-        if (mode === 'Normal' && e.type === 'PO') { isError = true; errorMsg = "⚠️ รายการนี้เป็น PO (ต้องเลือกโหมด 'จ่ายตาม PO' เท่านั้น)"; }
-        btn.disabled = isError; if (nm) nm.value = e.name;
-      } else { btn.disabled = false; if (nm) nm.value = e.name; }
-      prv.innerHTML = createPreviewHTML(e, isError, errorMsg); prv.classList.add('active'); prv.style.display = 'block';
+        if (mode === 'PO' && e.type !== 'PO') err = "⚠️ รายการนี้ไม่ใช่ PO";
+        if (mode === 'Normal' && e.type === 'PO') err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
+      }
+      btn.disabled = !!err; if (nm) nm.value = e.name;
+      prv.innerHTML = createPreviewHTML(e, !!err, err); prv.style.display = 'block';
+    }
+
+    function performGlobalSearch(q) {
+      const container = document.getElementById('searchResultsContainer');
+      const detail = document.getElementById('searchDetail');
+      if (detail) detail.innerHTML = ''; // Clear old details
+      if (!q || q.length < 2) { container.innerHTML = ''; return; }
+      const query = q.toLowerCase();
+      const matches = cache.entries.filter(e =>
+        e.id.toString().toLowerCase().includes(query) ||
+        e.refNo.toString().toLowerCase().includes(query) ||
+        (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+        e.name.toLowerCase().includes(query)
+      ).slice(0, 10);
+
+      container.innerHTML = matches.map(m => `
+        <div class="search-result-item" onclick="showSearchDetail('${m.id}')">
+          <div>
+            <div style="font-weight:800; font-size:14px;">#${m.id} - ${m.refNo}</div>
+            <div style="font-size:12px; color:var(--text-muted);">${m.name} | ${m.dept}</div>
+          </div>
+          <div style="font-weight:700; color:var(--primary-dark);">${Number(m.amount).toLocaleString()} ฿</div>
+        </div>
+      `).join('');
+    }
+
+    function showSearchDetail(id) {
+      const e = cache.entries.find(x => x.id == id);
+      document.getElementById('searchDetail').innerHTML = createPreviewHTML(e);
     }
 
     function loadEdit(id) {
-      const fieldBox = document.getElementById('editFields'); const prv = document.getElementById('editPrv');
-      if (!id || !cache) { fieldBox.style.display = 'none'; prv.style.display = 'none'; return; }
       const e = cache.entries.find(x => x.id == id);
-      if (e) {
-        fieldBox.style.display = 'block'; prv.style.display = 'none';
-        document.getElementById('eRef').value = e.refNo; document.getElementById('eDate').value = e.letterDateFormatted; document.getElementById('eName').value = e.name; document.getElementById('eDept').value = e.dept;
-        document.getElementById('eLiq').value = e.liquidateRefNo || ''; document.getElementById('eF').value = e.colF || ''; document.getElementById('eDesc').value = e.desc;
-        document.getElementById('eAmt').value = e.amount; document.getElementById('eCol').value = e.col; document.getElementById('catCodeE').value = e.catCode;
-      } else { fieldBox.style.display = 'none'; prv.innerHTML = '❌ ไม่พบไอดีนี้'; prv.className = 'preview-box'; prv.style.display = 'block'; }
+      if (!e) return;
+      document.getElementById('editFields').style.display = 'block';
+      document.getElementById('hiddenIdE').value = e.id;
+      document.getElementById('eRef').value = e.refNo; document.getElementById('eDate').value = e.letterDateFormatted;
+      document.getElementById('eName').value = e.name; document.getElementById('eDept').value = e.dept;
+      document.getElementById('eLiq').value = e.liquidateRefNo || ''; document.getElementById('eF').value = e.colF || '';
+      document.getElementById('eDesc').value = e.desc; document.getElementById('eAmt').value = e.amount;
+      document.getElementById('eCol').value = e.col; document.getElementById('catCodeE').value = e.catCode;
     }
 
     function syncCode(s) { document.getElementById(s.dataset.hidden).value = s.options[s.selectedIndex].dataset.code || ''; }
-
-    function setView(v, el) {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      el.classList.add('active');
-      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
-      const target = document.getElementById('view-' + v);
-      if (target) target.classList.add('active');
-      document.getElementById('viewTitle').innerText = el.innerText;
-    }
+    function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
     document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
     document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย'); init(); } };
     document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); init(); } };
     document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitUpdate', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย'); init(); } };
 
-    function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
-    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-
-    window.onload = () => {
-      document.getElementById('apiInput').value = API;
-      setStatus('ready', 'พร้อมเริ่มงาน');
-    };
+    window.onload = () => { document.getElementById('apiInput').value = API; setStatus('ready', 'พร้อมเริ่มงาน'); };
   </script>
 </body>
 
