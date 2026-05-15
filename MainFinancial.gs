@@ -70,16 +70,18 @@ function budget_getInitialData(planKey) {
     let catCode = "", catName = "", reserveAmount = 0, deductAmount = 0, col = 0;
     for (let c = 13; c < lastCol; c += 3) {
       if (headers[0][c]) {
-        const v1 = row[c];   // กันเงิน (Reserve) - Column N/Q/T...
-        const v2 = row[c+1]; // ตัดยอด (Deduct) - Column O/R/U...
-        const hasV1 = (v1 !== "" && typeof v1 === 'number');
-        const hasV2 = (v2 !== "" && typeof v2 === 'number');
+        const v1 = row[c];
+        const v2 = row[c+1];
+        // Check if value exists and is a valid number (or numeric string)
+        const hasV1 = (v1 !== "" && v1 !== null && !isNaN(parseFloat(v1)));
+        const hasV2 = (v2 !== "" && v2 !== null && !isNaN(parseFloat(v2)));
+        
         if (hasV1 || hasV2) {
-          catCode = headers[0][c];
-          catName = headers[1][c];
-          reserveAmount = hasV1 ? v1 : 0;
-          deductAmount = hasV2 ? v2 : 0;
-          col = c + 1; // 1-based index for getRange (A=1, N=14)
+          catCode = headers[0][c] || "-";
+          catName = headers[1][c] || "";
+          reserveAmount = hasV1 ? parseFloat(v1) : "";
+          deductAmount = hasV2 ? parseFloat(v2) : "";
+          col = c + 1;
           break;
         }
       }

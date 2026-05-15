@@ -923,7 +923,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbzX0rp6hdKodpmJl7ptFIG65ZGPj3sjtC2Ag00snVjq1bk2evVkyDNZu1GdoTRdaADP/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxl2IMyJAEYPp-F4buwP3ru2m-ZT2Y3YmiTxTERwpAMg322-biudx79y96Nf2glDeU5/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -1024,7 +1024,9 @@
     function createPreviewHTML(e, isError = false, errorMsg = "") {
       const statusClass = e.type === 'PO' ? 'status-po' : 'status-normal';
       const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
-      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name}</b></div><div><label>ฝ่าย:</label> <b>${e.dept}</b></div><div style="background:var(--primary-light); padding:5px; border-radius:5px;"><label>เงินกัน:</label> <b style="color:var(--primary-dark)">${Number(e.amount).toLocaleString()} ฿</b></div><div style="background:#fff7ed; padding:5px; border-radius:5px;"><label>เงินตัดยอด/คืน:</label> <b style="color:#c2410c">${Number(e.amountDeduct || 0).toLocaleString()} ฿</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
+      const fmt = (v) => (v !== "" && v !== null && v !== undefined) ? Number(v).toLocaleString() + " ฿" : "-";
+
+      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode || '-'}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name || '-'}</b></div><div><label>ฝ่าย:</label> <b>${e.dept || '-'}</b></div><div style="background:var(--primary-light); padding:5px; border-radius:5px;"><label>เงินกัน:</label> <b style="color:var(--primary-dark)">${fmt(e.amount)}</b></div><div style="background:#fff7ed; padding:5px; border-radius:5px;"><label>เงินตัดยอด/คืน:</label> <b style="color:#c2410c">${fmt(e.amountDeduct)}</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo || '-'}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
     }
 
     function omniSearch(val, view) {
