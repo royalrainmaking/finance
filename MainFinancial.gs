@@ -1,6 +1,7 @@
 const PLAN_CONFIG = {
   '1.ฝนหลวง':     { id: '1E43wKRlEa1xKM5l_zSDdstmAKPtDgw05rwJVeRLgTYk', sheet: '1.ฝน' },
   '2.ด้านการบิน':   { id: '1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc', sheet: '2.บิน' },
+  '2.1 บินสาธาฯ': { id: '1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc', sheet: '2.1 บินสาธาฯ' },
   '3.แก้ปัญหาฝุ่น':   { id: '1iOX9ISvptU2UpMbVNPTuYHbA4df11dytCHxFYKoSQxg', sheet: '3.ฝุ่น' },
   '4.บรรเทาลูกเห็บ': { id: '1SM0GYznjAKPOQT-itypsk83n7l5rx9ibWzKcLGZb4H4', sheet: '4.ลูกเห็บ' }
 };

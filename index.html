@@ -575,6 +575,7 @@
     <div class="plan-bar">
       <div class="plan-tab" data-plan="1.ฝนหลวง" onclick="setPlan(this)">1. การปฏิบัติการฝนหลวง</div>
       <div class="plan-tab" data-plan="2.ด้านการบิน" onclick="setPlan(this)">2. บริการด้านการบิน</div>
+      <div class="plan-tab" data-plan="2.1 บินสาธาฯ" onclick="setPlan(this)">2.1 บินสาธาฯ</div>
       <div class="plan-tab" data-plan="3.แก้ปัญหาฝุ่น" onclick="setPlan(this)">3. แก้ไขปัญหาฝุ่นละออง</div>
       <div class="plan-tab" data-plan="4.บรรเทาลูกเห็บ" onclick="setPlan(this)">4. บรรเทาพายุลูกเห็บ</div>
     </div>
@@ -622,44 +623,6 @@
               <div class="field"><label>หมวดงบประมาณ</label>
                 <select name="col" class="catSelect" data-hidden="catCode1" onchange="syncCode(this)" required>
                   <option value="">-- เลือกหมวด --</option>
-                  <optgroup label="2.1.1 ค่าตอบแทน">
-                    <option value="14" data-code="A1">A1 - ค่าอาหารทำการนอกเวลา</option>
-                    <option value="17" data-code="A2">A2 - ค่าตอบแทนคณะกรรมการ</option>
-                    <option value="20" data-code="A3">A3 - ค่าตอบแทนผู้ปฏิบัติงานบนอากาศยาน</option>
-                    <option value="23" data-code="A4">A4 - ค่าสมนาคุณวิทยากร</option>
-                  </optgroup>
-                  <optgroup label="2.1.2 ค่าใช้สอย">
-                    <option value="26" data-code="B1">B1 - ค่าเบี้ยเลี้ยงที่พักพาหนะ</option>
-                    <option value="29" data-code="B2">B2 - ค่าซ่อมแซมยานพาหนะ</option>
-                    <option value="32" data-code="B3">B3 - ค่าซ่อมแซมครุภัณฑ์</option>
-                    <option value="35" data-code="B4">B4 - ค่าซ่อมแซมสิ่งก่อสร้าง</option>
-                    <option value="38" data-code="B5">B5 - ค่าทำความสะอาด</option>
-                    <option value="41" data-code="B6">B6 - รักษาความปลอดภัย</option>
-                    <option value="44" data-code="B7">B7 - จ้างเหมาเอกชนดำเนินงาน</option>
-                    <option value="47" data-code="B8">B8 - ค่าสัมมนาและฝึกอบรม</option>
-                    <option value="50" data-code="B9">B9 - ค่าภาษี/ค่าธรรมเนียมศ</option>
-                    <option value="53" data-code="B10">B10 - ค่ารับรองและพิธีการ</option>
-                    <option value="56" data-code="B11">B11 - ค่าตรวจสุขภาพ</option>
-                    <option value="59" data-code="B12">B12 - ค่าใช้สอยอื่นๆ</option>
-                    <option value="62" data-code="B13">B13 - จ้างเหมาบริการอื่นๆ</option>
-                  </optgroup>
-                  <optgroup label="2.1.3 ค่าวัสดุ">
-                    <option value="65" data-code="C1">C1 - วัสดุสำนักงาน</option>
-                    <option value="68" data-code="C2">C2 - วัสดุเชื้อเพลิง (อวก.)</option>
-                    <option value="71" data-code="C3">C3 - วัสดุเชื้อเพลิง (รถยนต์)</option>
-                    <option value="74" data-code="C4">C4 - วัสดุก่อสร้าง</option>
-                    <option value="77" data-code="C5">C5 - วัสดุวิทย์/การแพทย์</option>
-                    <option value="80" data-code="C6">C6 - วัสดุคอมพิวเตอร์</option>
-                    <option value="83" data-code="C7">C7 - วัสดุอากาศยาน</option>
-                    <option value="86" data-code="C8">C8 - วัสดุยานพาหนะขนส่ง</option>
-                    <option value="89" data-code="C9">C9 - วัสดุการเกษตร</option>
-                    <option value="92" data-code="C10">C10 - วัสดุงานบ้านงานครัว</option>
-                    <option value="95" data-code="C11">C11 - วัสดุไฟฟ้า/วิทยุ</option>
-                    <option value="98" data-code="C12">C12 - วัสดุอื่นๆ</option>
-                    <option value="101" data-code="C13">C13 - วัสดุโรงงาน</option>
-                  </optgroup>
-                  <option value="104" data-code="2.2.1">2.2.1 - ค่าโทรศัพท์</option>
-                  <option value="119" data-code="3">3 - งบลงทุน</option>
                 </select>
                 <input type="hidden" name="catCode" id="catCode1">
               </div>
@@ -723,44 +686,6 @@
                   <select name="col" id="raCol" class="catSelect" data-hidden="catCodeRA" onchange="syncCode(this)"
                     required>
                     <option value="">-- เลือกหมวด --</option>
-                    <optgroup label="2.1.1 ค่าตอบแทน">
-                      <option value="14" data-code="A1">A1 - ค่าอาหารทำการนอกเวลา</option>
-                      <option value="17" data-code="A2">A2 - ค่าตอบแทนคณะกรรมการ</option>
-                      <option value="20" data-code="A3">A3 - ค่าตอบแทนผู้ปฏิบัติงานบนอากาศยาน</option>
-                      <option value="23" data-code="A4">A4 - ค่าสมนาคุณวิทยากร</option>
-                    </optgroup>
-                    <optgroup label="2.1.2 ค่าใช้สอย">
-                      <option value="26" data-code="B1">B1 - ค่าเบี้ยเลี้ยงที่พักพาหนะ</option>
-                      <option value="29" data-code="B2">B2 - ค่าซ่อมแซมยานพาหนะ</option>
-                      <option value="32" data-code="B3">B3 - ค่าซ่อมแซมครุภัณฑ์</option>
-                      <option value="35" data-code="B4">B4 - ค่าซ่อมแซมสิ่งก่อสร้าง</option>
-                      <option value="38" data-code="B5">B5 - ค่าทำความสะอาด</option>
-                      <option value="41" data-code="B6">B6 - รักษาความปลอดภัย</option>
-                      <option value="44" data-code="B7">B7 - จ้างเหมาเอกชนดำเนินงาน</option>
-                      <option value="47" data-code="B8">B8 - ค่าสัมมนาและฝึกอบรม</option>
-                      <option value="50" data-code="B9">B9 - ค่าภาษี/ค่าธรรมเนียมศ</option>
-                      <option value="53" data-code="B10">B10 - ค่ารับรองและพิธีการ</option>
-                      <option value="56" data-code="B11">B11 - ค่าตรวจสุขภาพ</option>
-                      <option value="59" data-code="B12">B12 - ค่าใช้สอยอื่นๆ</option>
-                      <option value="62" data-code="B13">B13 - จ้างเหมาบริการอื่นๆ</option>
-                    </optgroup>
-                    <optgroup label="2.1.3 ค่าวัสดุ">
-                      <option value="65" data-code="C1">C1 - วัสดุสำนักงาน</option>
-                      <option value="68" data-code="C2">C2 - วัสดุเชื้อเพลิง (อวก.)</option>
-                      <option value="71" data-code="C3">C3 - วัสดุเชื้อเพลิง (รถยนต์)</option>
-                      <option value="74" data-code="C4">C4 - วัสดุก่อสร้าง</option>
-                      <option value="77" data-code="C5">C5 - วัสดุวิทย์/การแพทย์</option>
-                      <option value="80" data-code="C6">C6 - วัสดุคอมพิวเตอร์</option>
-                      <option value="83" data-code="C7">C7 - วัสดุอากาศยาน</option>
-                      <option value="86" data-code="C8">C8 - วัสดุยานพาหนะขนส่ง</option>
-                      <option value="89" data-code="C9">C9 - วัสดุการเกษตร</option>
-                      <option value="92" data-code="C10">C10 - วัสดุงานบ้านงานครัว</option>
-                      <option value="95" data-code="C11">C11 - วัสดุไฟฟ้า/วิทยุ</option>
-                      <option value="98" data-code="C12">C12 - วัสดุอื่นๆ</option>
-                      <option value="101" data-code="C13">C13 - วัสดุโรงงาน</option>
-                    </optgroup>
-                    <option value="104" data-code="2.2.1">2.2.1 - ค่าโทรศัพท์</option>
-                    <option value="119" data-code="3">3 - งบลงทุน</option>
                   </select>
                   <input type="hidden" name="catCode" id="catCodeRA">
                 </div>
@@ -868,29 +793,6 @@
                 <div class="field"><label>หมวดงบประมาณ (K)</label>
                   <select name="col" id="eCol" class="catSelect" data-hidden="catCodeE" onchange="syncCode(this)">
                     <option value="">-- เลือก --</option>
-                    <optgroup label="2.1.1 ค่าตอบแทน">
-                      <option value="14" data-code="A1">A1 - ค่าอาหารทำการนอกเวลา</option>
-                      <option value="17" data-code="A2">A2 - ค่าตอบแทนคณะกรรมการ</option>
-                      <option value="20" data-code="A3">A3 - ค่าตอบแทนผู้ปฏิบัติงานบนอากาศยาน</option>
-                      <option value="23" data-code="A4">A4 - ค่าสมนาคุณวิทยากร</option>
-                    </optgroup>
-                    <optgroup label="2.1.2 ค่าใช้สอย">
-                      <option value="26" data-code="B1">B1 - ค่าเบี้ยเลี้ยงที่พักพาหนะ</option>
-                      <option value="29" data-code="B2">B2 - ค่าซ่อมแซมยานพาหนะ</option>
-                      <option value="32" data-code="B3">B3 - ค่าซ่อมแซมครุภัณฑ์</option>
-                      <option value="35" data-code="B4">B4 - ค่าซ่อมแซมสิ่งก่อสร้าง</option>
-                      <option value="38" data-code="B5">B5 - ค่าทำความสะอาด</option>
-                      <option value="41" data-code="B6">B6 - รักษาความปลอดภัย</option>
-                      <option value="44" data-code="B7">B7 - จ้างเหมาเอกชนดำเนินงาน</option>
-                      <option value="47" data-code="B8">B8 - ค่าสัมมนาและฝึกอบรม</option>
-                      <option value="50" data-code="B9">B9 - ค่าภาษี/ค่าธรรมเนียมศ</option>
-                      <option value="53" data-code="B10">B10 - ค่ารับรองและพิธีการ</option>
-                      <option value="56" data-code="B11">B11 - ค่าตรวจสุขภาพ</option>
-                      <option value="59" data-code="B12">B12 - ค่าใช้สอยอื่นๆ</option>
-                      <option value="62" data-code="B13">B13 - จ้างเหมาบริการอื่นๆ</option>
-                    </optgroup>
-                    <option value="104" data-code="2.2.1">2.2.1 - ค่าโทรศัพท์</option>
-                    <option value="119" data-code="3">3 - งบลงทุน</option>
                   </select>
                   <input type="hidden" name="catCode" id="catCodeE">
                 </div>
@@ -923,15 +825,76 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxl2IMyJAEYPp-F4buwP3ru2m-ZT2Y3YmiTxTERwpAMg322-biudx79y96Nf2glDeU5/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbyh6HTPtXPq01mjnJButg_0UGRho5G8XF8LuDrf-elANb0hDdUWpsPG_tcoXZ154GXB/exec';
     let currentPlan = null;
     let cache = null;
 
     const themeColors = {
       '1.ฝนหลวง': { p: '#10b981', l: '#d1fae5', d: '#065f46' },
       '2.ด้านการบิน': { p: '#f59e0b', l: '#fef3c7', d: '#b45309' },
+      '2.1 บินสาธาฯ': { p: '#0ea5e9', l: '#e0f2fe', d: '#0369a1' },
       '3.แก้ปัญหาฝุ่น': { p: '#ef4444', l: '#fef2f2', d: '#991b1b' },
       '4.บรรเทาลูกเห็บ': { p: '#8b5cf6', l: '#ede9fe', d: '#5b21b6' }
+    };
+
+    const PLAN_CATEGORIES = {
+      'default': [
+        {
+          label: '2.1.1 ค่าตอบแทน', options: [
+            { value: '14', code: 'A1', text: 'A1 - ค่าอาหารทำการนอกเวลา' },
+            { value: '17', code: 'A2', text: 'A2 - ค่าตอบแทนคณะกรรมการ' },
+            { value: '20', code: 'A3', text: 'A3 - ค่าตอบแทนผู้ปฏิบัติงานบนอากาศยาน' },
+            { value: '23', code: 'A4', text: 'A4 - ค่าสมนาคุณวิทยากร' }
+          ]
+        },
+        {
+          label: '2.1.2 ค่าใช้สอย', options: [
+            { value: '26', code: 'B1', text: 'B1 - ค่าเบี้ยเลี้ยงที่พักพาหนะ' },
+            { value: '29', code: 'B2', text: 'B2 - ค่าซ่อมแซมยานพาหนะ' },
+            { value: '32', code: 'B3', text: 'B3 - ค่าซ่อมแซมครุภัณฑ์' },
+            { value: '35', code: 'B4', text: 'B4 - ค่าซ่อมแซมสิ่งก่อสร้าง' },
+            { value: '38', code: 'B5', text: 'B5 - ค่าทำความสะอาด' },
+            { value: '41', code: 'B6', text: 'B6 - รักษาความปลอดภัย' },
+            { value: '44', code: 'B7', text: 'B7 - จ้างเหมาเอกชนดำเนินงาน' },
+            { value: '47', code: 'B8', text: 'B8 - ค่าสัมมนาและฝึกอบรม' },
+            { value: '50', code: 'B9', text: 'B9 - ค่าภาษี/ค่าธรรมเนียมศ' },
+            { value: '53', code: 'B10', text: 'B10 - ค่ารับรองและพิธีการ' },
+            { value: '56', code: 'B11', text: 'B11 - ค่าตรวจสุขภาพ' },
+            { value: '59', code: 'B12', text: 'B12 - ค่าใช้สอยอื่นๆ' },
+            { value: '62', code: 'B13', text: 'B13 - จ้างเหมาบริการอื่นๆ' }
+          ]
+        },
+        {
+          label: '2.1.3 ค่าวัสดุ', options: [
+            { value: '65', code: 'C1', text: 'C1 - วัสดุสำนักงาน' },
+            { value: '68', code: 'C2', text: 'C2 - วัสดุเชื้อเพลิง (อวก.)' },
+            { value: '71', code: 'C3', text: 'C3 - วัสดุเชื้อเพลิง (รถยนต์)' },
+            { value: '74', code: 'C4', text: 'C4 - วัสดุก่อสร้าง' },
+            { value: '77', code: 'C5', text: 'C5 - วัสดุวิทย์/การแพทย์' },
+            { value: '80', code: 'C6', text: 'C6 - วัสดุคอมพิวเตอร์' },
+            { value: '83', code: 'C7', text: 'C7 - วัสดุอากาศยาน' },
+            { value: '86', code: 'C8', text: 'C8 - วัสดุยานพาหนะขนส่ง' },
+            { value: '89', code: 'C9', text: 'C9 - วัสดุการเกษตร' },
+            { value: '92', code: 'C10', text: 'C10 - วัสดุงานบ้านงานครัว' },
+            { value: '95', code: 'C11', text: 'C11 - วัสดุไฟฟ้า/วิทยุ' },
+            { value: '98', code: 'C12', text: 'C12 - วัสดุอื่นๆ' },
+            { value: '101', code: 'C13', text: 'C13 - วัสดุโรงงาน' }
+          ]
+        }
+      ],
+      '2.1 บินสาธาฯ': [
+        {
+          label: 'หมวด ค่าสาธารณูปโภค', options: [
+            { value: '17', code: 'ก.', text: 'ก. - ค่าโทรศัพท์สำนักงาน' },
+            { value: '20', code: 'ข.', text: 'ข. - ค่าโทรศัพท์เคลื่อนที่' },
+            { value: '23', code: 'ค.', text: 'ค. - ค่าน้ำประปา' },
+            { value: '26', code: 'ง.', text: 'ง. - ค่าไปรษณีย์' },
+            { value: '29', code: 'จ.', text: 'จ. - ค่าไฟฟ้า' },
+            { value: '32', code: 'ฉ.', text: 'ฉ. - ค่าบริการโทรคมนาคม (Internet)' },
+            { value: '35', code: 'ช.', text: 'ช. - ค่า GPS' }
+          ]
+        }
+      ]
     };
 
     function setStatus(state, text) {
@@ -1011,7 +974,31 @@
     function setPlan(el) {
       document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active'); currentPlan = el.dataset.plan;
-      updateTheme(currentPlan); init();
+      updateTheme(currentPlan);
+      updateCategoryDropdowns(currentPlan);
+      init();
+    }
+
+    function updateCategoryDropdowns(plan) {
+      const cats = PLAN_CATEGORIES[plan] || PLAN_CATEGORIES['default'];
+      const selects = document.querySelectorAll('.catSelect');
+      selects.forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">-- เลือกหมวด --</option>';
+        cats.forEach(group => {
+          const optgroup = document.createElement('optgroup');
+          optgroup.label = group.label;
+          group.options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.dataset.code = opt.code;
+            option.textContent = opt.text;
+            optgroup.appendChild(option);
+          });
+          select.appendChild(optgroup);
+        });
+        select.value = currentVal;
+      });
     }
 
     function setView(v, el) {
