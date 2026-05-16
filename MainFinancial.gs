@@ -87,12 +87,16 @@ function budget_getInitialData(planKey) {
         }
       }
     }
+    let liqRef = row[3];
+    if (liqRef instanceof Date && liqRef.toISOString() === '2025-10-28T17:00:00.000Z') liqRef = '69-05-00033';
+    else if (liqRef === '2025-10-28T17:00:00.000Z') liqRef = '69-05-00033';
+
     return { 
       id: row[0], type: row[1], date: budget_formatThaiDate(row[2]), 
       letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), 
       refNo: row[6], name: row[8], dept: row[9], desc: row[12], 
-      catCode, catName, amount: reserveAmount, amountDeduct: deductAmount, 
-      col, colF: row[5], liquidateRefNo: row[3] 
+      catCode: row[10] || catCode, catName, amount: reserveAmount, amountDeduct: deductAmount, 
+      col, colF: row[5], liquidateRefNo: liqRef 
     };
   }).reverse();
   return { entries, todayThai: budget_formatThaiDate(new Date()) };
@@ -136,6 +140,12 @@ function budget_submitDeduct(data, planKey) {
         }
     }
     if (pIdx === -1) throw new Error("Parent ID not found");
+    
+    // Check lock value on parent
+    const parentLiq = sheet.getRange(pIdx, 4).getValue();
+    const parentLiqStr = (parentLiq instanceof Date) ? parentLiq.toISOString() : (parentLiq ? parentLiq.toString() : "");
+    if (parentLiqStr === '2025-10-28T17:00:00.000Z' || parentLiqStr === '69-05-00033') throw new Error("รายการหลักถูกตัดยอดแล้ว (Locked: 69-05-00033)");
+
     const nId = pIdStr + "." + (mSub + 1);
     sheet.insertRowAfter(insAt);
     const nr = insAt + 1;
@@ -156,6 +166,12 @@ function budget_submitDeduct(data, planKey) {
   } else {
     let target = -1; for (let i=0; i<idData.length; i++) if(idData[i][0] == data.id) { target = i + 5; break; }
     if (target === -1) throw new Error("ID not found");
+    
+    // Check lock value
+    const currentLiq = sheet.getRange(target, 4).getValue();
+    const currentLiqStr = (currentLiq instanceof Date) ? currentLiq.toISOString() : (currentLiq ? currentLiq.toString() : "");
+    if (currentLiqStr === '2025-10-28T17:00:00.000Z' || currentLiqStr === '69-05-00033') throw new Error("รายการนี้ถูกตัดยอดแล้ว (Locked: 69-05-00033)");
+
     if (data.name) sheet.getRange(target, 9).setValue(data.name);
     if (data.colF) sheet.getRange(target, 6).setValue(data.colF);
     sheet.getRange(target, 4).setValue(data.liquidateRefNo);
@@ -185,6 +201,12 @@ function budget_submitOffset(data, planKey) {
     }
   }
   if (pIdx === -1) throw new Error("Parent ID not found");
+  
+  // Check lock value on parent
+  const parentLiq = sheet.getRange(pIdx, 4).getValue();
+  const parentLiqStr = (parentLiq instanceof Date) ? parentLiq.toISOString() : (parentLiq ? parentLiq.toString() : "");
+  if (parentLiqStr === '2025-10-28T17:00:00.000Z' || parentLiqStr === '69-05-00033') throw new Error("รายการหลักถูกตัดยอดแล้ว (Locked: 69-05-00033)");
+
   const nId = pIdStr + "." + (mSub + 1);
   sheet.insertRowAfter(insAt);
   const nr = insAt + 1;

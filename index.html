@@ -375,6 +375,41 @@
       margin-top: 20px;
     }
 
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 20px 15px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .action-btn i {
+      font-size: 24px;
+    }
+
+    .action-btn span {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
     #loader {
       display: none;
       position: fixed;
@@ -522,6 +557,82 @@
     #splash.hidden {
       display: none;
     }
+
+    #view-table {
+      max-width: 100% !important;
+      width: 100% !important;
+      margin: 0 !important;
+    }
+
+    /* Table Styles */
+    .table-wrapper {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+      width: 100%;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 800px;
+    }
+
+    .data-table th {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      text-align: left;
+      padding: 15px 20px;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .data-table td {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover {
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .data-table .id-col {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .data-table .amt-col {
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar select {
+      flex: 1;
+      min-width: 150px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 2px solid var(--border);
+    }
   </style>
 </head>
 
@@ -540,6 +651,24 @@
     </div>
   </div>
 
+  <div id="actionOverlay" class="modalOverlay"
+    style="position:fixed; inset:0; background:rgba(15,23,42,0.4); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:2000;">
+    <div class="modal-card" style="width:450px;">
+      <div style="font-size:14px; font-weight:800; color:var(--text-muted); margin-bottom:5px;">
+        เลือกการดำเนินการสำหรับรายการ</div>
+      <div id="actionIdDisplay" style="font-size:24px; font-weight:800; margin-bottom:20px; color:var(--primary-dark);">
+        #ID</div>
+      <div class="action-grid">
+        <button class="action-btn" onclick="doAction('deduct')"><span>💰 ตัดยอด</span></button>
+        <button class="action-btn" onclick="doAction('offset')"><span>🔄 หักล้าง</span></button>
+        <button class="action-btn" onclick="doAction('edit')"><span>🛠 แก้ไข</span></button>
+        <button class="action-btn" onclick="doAction('reserve-add')"><span>➕ กันเงินเพิ่ม</span></button>
+      </div>
+      <button class="modal-btn" style="background:#f1f5f9; color:var(--text-main); margin-top:25px;"
+        onclick="closeActionMenu()">ยกเลิก</button>
+    </div>
+  </div>
+
   <aside class="sidebar">
     <div class="logo">
       <img src="https://catalog.royalrain.go.th/uploads/group/2022-01-05-023815.957138logoryrweb.png" alt="Logo"
@@ -547,7 +676,8 @@
       <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
     </div>
     <nav class="nav-menu">
-      <div class="nav-item active" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
+      <div class="nav-item active" id="nav-table" onclick="setView('table', this); renderTable()">📊 ตารางทั้งหมด</div>
+      <div class="nav-item" id="nav-reserve" onclick="setView('reserve', this)">📝 กันเงิน</div>
       <div class="nav-item" id="nav-reserve-add" onclick="setView('reserve-add', this)">➕ กันเงินเพิ่ม</div>
       <div class="nav-item" id="nav-deduct" onclick="setView('deduct', this)">💰 ตัดยอด</div>
       <div class="nav-item" id="nav-offset" onclick="setView('offset', this)">🔄 หักล้าง</div>
@@ -562,7 +692,7 @@
 
   <main class="main-content">
     <header class="top-bar">
-      <h2 id="viewTitle">📝 กันเงิน</h2>
+      <h2 id="viewTitle">📊 ตารางทั้งหมด</h2>
       <div style="display: flex; align-items: center; gap: 20px;">
         <div id="dateDisplay" style="font-weight:700; font-size: 14px;">-- -- ----</div>
         <div class="status-pill">
@@ -590,8 +720,46 @@
         </div>
       </div>
 
+      <!-- ALL DATA TABLE (NEW DEFAULT) -->
+      <div id="view-table" class="app-view active">
+        <div class="search-box" style="margin-bottom: 10px;">
+          <input type="text" id="tableSearchInput"
+            placeholder="ค้นหาจากทุกอย่างในตาราง (ID, เลขหนังสือ, ชื่อ, รายการ...)" oninput="renderTable(this.value)">
+        </div>
+        <div class="filter-bar">
+          <select id="filterDept" onchange="renderTable(document.getElementById('tableSearchInput').value)">
+            <option value="">-- กรองตามฝ่าย --</option>
+          </select>
+          <select id="filterCat" onchange="renderTable(document.getElementById('tableSearchInput').value)">
+            <option value="">-- กรองตามหมวด --</option>
+          </select>
+          <button class="plan-tab" style="padding:8px 15px; margin:0; height:auto; font-size:12px;" onclick="clearTableFilters()">ล้างฟิลเตอร์</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>วันที่</th>
+                <th>หมวด</th>
+                <th>เลขหนังสือ</th>
+                <th>ชื่อผู้เบิก</th>
+                <th>ฝ่าย</th>
+                <th>รายการ</th>
+                <th style="text-align:right">เงินกัน</th>
+                <th style="text-align:right">เงินตัดยอด/คืน</th>
+                <th>เลขระบบตัดยอด</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- RESERVE -->
-      <div id="view-reserve" class="app-view active">
+      <div id="view-reserve" class="app-view">
         <div class="form-wrapper">
           <form id="reserveForm">
             <div class="field full"><label>ประเภทการกันเงิน</label>
@@ -825,7 +993,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbyh6HTPtXPq01mjnJButg_0UGRho5G8XF8LuDrf-elANb0hDdUWpsPG_tcoXZ154GXB/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbyQtcRcIBLKnnvOVwiMfeTNhyaO-yg382lDA9lWguhbkl2RuwYqzg6VAvODTJK-XdL_/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -941,6 +1109,7 @@
         updateDataLists(d.entries);
         document.getElementById('splash').classList.add('hidden');
         document.querySelectorAll('.submit-btn').forEach(b => b.disabled = false);
+        if (document.getElementById('view-table').classList.contains('active')) renderTable();
       }
     }
 
@@ -948,6 +1117,16 @@
       if (!entries) return;
       window.recentNames = [...new Set(entries.map(e => (e.name || "").toString().trim()))].filter(Boolean).slice(0, 100);
       window.recentDescs = [...new Set(entries.map(e => (e.desc || "").toString().trim()))].filter(Boolean).slice(0, 200);
+      
+      // Update Filter Dropdowns
+      const depts = [...new Set(entries.map(e => e.dept))].filter(Boolean).sort();
+      const cats = [...new Set(entries.map(e => e.catCode))].filter(Boolean).sort();
+      
+      const fDept = document.getElementById('filterDept');
+      const fCat = document.getElementById('filterCat');
+      
+      fDept.innerHTML = '<option value="">-- กรองตามฝ่าย --</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+      fCat.innerHTML = '<option value="">-- กรองตามหมวด --</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
     function showFloatingSuggestions(input, sugId, type) {
@@ -1018,8 +1197,13 @@
 
     function omniSearch(val, view) {
       const prv = document.getElementById('prv' + view); if (!val || !cache) { prv.style.display = 'none'; return; }
-      const q = val.toString().toLowerCase();
-      const match = cache.entries.find(e => e.id.toString().toLowerCase() === q || e.refNo.toString().toLowerCase() === q || (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase() === q));
+      const q = val.toString().trim().toLowerCase();
+      const match = cache.entries.find(e =>
+        e.id.toString().toLowerCase() === q ||
+        e.refNo.toString().toLowerCase() === q ||
+        (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase() === q) ||
+        (e.colF && e.colF.toString().toLowerCase() === q)
+      );
       if (match) {
         document.getElementById('hiddenId' + view).value = match.id;
         if (view === 'E') loadEdit(match.id);
@@ -1051,10 +1235,14 @@
       const prv = document.getElementById('prv' + view); const btn = document.getElementById('btn' + view); const nm = document.getElementById('nm' + view);
       if (!e) { btn.disabled = true; return; }
       let err = "";
-      if (view === 'D') {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        if (mode === 'PO' && e.type !== 'PO') err = "⚠️ รายการนี้ไม่ใช่ PO";
-        if (mode === 'Normal' && e.type === 'PO') err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
+      if (view === 'D' || view === 'O') {
+        const modeEl = document.querySelector('input[name="mode"]:checked');
+        const mode = modeEl ? modeEl.value : 'Normal';
+        if (view === 'D') {
+          if (mode === 'PO' && e.type !== 'PO') err = "⚠️ รายการนี้ไม่ใช่ PO";
+          if (mode === 'Normal' && e.type === 'PO') err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
+        }
+        if (e.liquidateRefNo === '2025-10-28T17:00:00.000Z' || e.liquidateRefNo === '69-05-00033') err = "⚠️ รายการนี้ถูกตัดยอดแล้ว (Locked: 69-05-00033)";
       }
       btn.disabled = !!err; if (nm) nm.value = e.name;
       prv.innerHTML = createPreviewHTML(e, !!err, err); prv.style.display = 'block';
@@ -1064,12 +1252,13 @@
       const container = document.getElementById('searchResultsContainer');
       const detail = document.getElementById('searchDetail');
       if (detail) detail.innerHTML = ''; // Clear old details
-      if (!q || q.length < 2) { container.innerHTML = ''; return; }
-      const query = q.toLowerCase();
+      if (!q || q.trim().length < 2) { container.innerHTML = ''; return; }
+      const query = q.trim().toLowerCase();
       const matches = cache.entries.filter(e =>
         e.id.toString().toLowerCase().includes(query) ||
         e.refNo.toString().toLowerCase().includes(query) ||
         (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+        (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
         e.name.toLowerCase().includes(query)
       ).slice(0, 10);
 
@@ -1106,6 +1295,95 @@
     function syncCode(s) { document.getElementById(s.dataset.hidden).value = s.options[s.selectedIndex].dataset.code || ''; }
     function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
     function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+    function renderTable(q = "") {
+      const tbody = document.getElementById('tableBody');
+      if (!cache || !cache.entries) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>'; return; }
+
+      let filtered = cache.entries.filter(e => e.refNo && e.refNo.toString().trim() !== "");
+
+      // Apply Filter Selects
+      const fDept = document.getElementById('filterDept').value;
+      const fCat = document.getElementById('filterCat').value;
+      
+      if (fDept) filtered = filtered.filter(e => e.dept === fDept);
+      if (fCat) filtered = filtered.filter(e => e.catCode === fCat);
+
+      if (q.trim()) {
+        const query = q.trim().toLowerCase();
+        filtered = filtered.filter(e =>
+          e.id.toString().toLowerCase().includes(query) ||
+          e.refNo.toString().toLowerCase().includes(query) ||
+          (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+          (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
+          e.name.toLowerCase().includes(query) ||
+          e.dept.toLowerCase().includes(query) ||
+          e.desc.toLowerCase().includes(query) ||
+          (e.catCode && e.catCode.toLowerCase().includes(query))
+        );
+      }
+
+      tbody.innerHTML = filtered.map(e => `
+        <tr onclick="selectFromTable('${e.id}')">
+          <td class="id-col">#${e.id}</td>
+          <td style="white-space:nowrap;">${e.date}</td>
+          <td><span class="cat-badge" style="font-size:11px; padding:2px 6px;">${e.catCode || '-'}</span></td>
+          <td style="white-space:nowrap;">${e.refNo}</td>
+          <td style="white-space:nowrap;"><b>${e.name}</b></td>
+          <td>${e.dept}</td>
+          <td style="min-width:250px; font-size:12px; line-height:1.4;">${e.desc}</td>
+          <td class="amt-col" style="color:var(--primary-dark)">${Number(e.amount || 0).toLocaleString()}</td>
+          <td class="amt-col" style="color:#c2410c">${Number(e.amountDeduct || 0).toLocaleString()}</td>
+          <td style="white-space:nowrap;">${e.colF || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    let selectedId = null;
+    function selectFromTable(id) {
+      selectedId = id;
+      document.getElementById('actionIdDisplay').innerText = '#' + id;
+      document.getElementById('actionOverlay').style.display = 'flex';
+    }
+
+    function clearTableFilters() {
+      document.getElementById('filterDept').value = "";
+      document.getElementById('filterCat').value = "";
+      document.getElementById('tableSearchInput').value = "";
+      renderTable();
+    }
+
+    function closeActionMenu() {
+      document.getElementById('actionOverlay').style.display = 'none';
+    }
+
+    function doAction(act) {
+      closeActionMenu();
+      const navId = 'nav-' + act;
+      setView(act, document.getElementById(navId));
+
+      let searchInputId = '';
+      if (act === 'deduct') searchInputId = 'deductSearchId';
+      else if (act === 'offset') searchInputId = 'offsetSearchId';
+      else if (act === 'edit') {
+        // Special case for edit since it doesn't have a fixed search input ID in the HTML
+        const editInput = document.querySelector('#view-edit input[placeholder*="ID"]');
+        if (editInput) {
+          editInput.value = selectedId;
+          omniSearch(selectedId, 'E');
+        }
+        return;
+      }
+      else if (act === 'reserve-add') searchInputId = 'raSearchInput';
+
+      if (searchInputId) {
+        const input = document.getElementById(searchInputId);
+        if (input) {
+          input.value = selectedId;
+          omniSearch(selectedId, act === 'deduct' ? 'D' : (act === 'offset' ? 'O' : 'RA'));
+        }
+      }
+    }
 
     document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
     document.getElementById('reserveAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserveAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการกันเงินเพิ่มเรียบร้อย ID: ' + r.id); init(); e.target.reset(); document.getElementById('reserveAddFields').style.display = 'none'; document.getElementById('prvRA').style.display = 'none'; } };
