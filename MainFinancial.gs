@@ -25,7 +25,11 @@ function doPost(e) {
     else if (action === 'submitReserveAdd') res = budget_submitReserveAdd(params.data, planKey);
     else if (action === 'submitDeduct') res = budget_submitDeduct(params.data, planKey);
     else if (action === 'submitOffset') res = budget_submitOffset(params.data, planKey);
+    else if (action === 'submitDeductAdd') res = budget_submitDeductAdd(params.data, planKey);
     else if (action === 'submitUpdate') res = budget_submitUpdate(params.data, planKey);
+    else if (action === 'submitCancel') res = budget_submitCancel(params.data, planKey);
+
+
     return ContentService.createTextOutput(JSON.stringify(res || { error: 'Action not found' })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) { return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON); }
 }
@@ -280,4 +284,84 @@ function budget_submitReserveAdd(data, planKey) {
   if (data.col) sheet.getRange(nr, parseInt(data.col)).setValue(parseFloat(data.amount));
   budget_applyFormulas(sheet, nr);
   return { success: true, id: nId };
+}
+
+function budget_submitDeductAdd(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const idData = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  
+  let pIdx = -1; let mSub = 0; let insAt = -1;
+  const pIdStr = data.id.toString();
+  for (let i = 0; i < idData.length; i++) {
+    const cur = idData[i][0].toString();
+    if (cur === pIdStr) { pIdx = i + 5; insAt = pIdx; }
+    if (cur.startsWith(pIdStr + ".")) {
+      const s = parseInt(cur.split(".")[1]); if (s > mSub) mSub = s;
+      insAt = i + 5;
+    }
+  }
+  if (pIdx === -1) throw new Error("Parent ID not found");
+  
+  const parentLiq = sheet.getRange(pIdx, 4).getValue();
+  const parentLiqStr = (parentLiq instanceof Date) ? parentLiq.toISOString() : (parentLiq ? parentLiq.toString() : "");
+  if (parentLiqStr === '2025-10-28T17:00:00.000Z' || parentLiqStr === '69-05-00033') throw new Error("รายการหลักถูกตัดยอดแล้ว (Locked: 69-05-00033)");
+
+  const nId = pIdStr + "." + (mSub + 1);
+  sheet.insertRowAfter(insAt);
+  const nr = insAt + 1;
+  sheet.getRange(nr, 1).setValue(nId);
+  sheet.getRange(nr, 2).setValue("ตัดยอดเพิ่ม");
+  if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
+  sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
+  [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+  const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+  for (let c = 13; c < pVals.length; c++) {
+    if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
+      sheet.getRange(nr, c+2).setValue(parseFloat(data.amount)); break;
+    }
+  }
+  budget_applyFormulas(sheet, nr);
+  return { success: true, id: nId };
+}
+function budget_submitCancel(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const idData = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+
+  let target = -1;
+  for (let i = 0; i < idData.length; i++) {
+    if (idData[i][0].toString() === data.id.toString()) { target = i + 5; break; }
+  }
+  if (target === -1) throw new Error("ID not found");
+
+  // Get current category and amount
+  const rowVals = sheet.getRange(target, 1, 1, sheet.getLastColumn()).getValues()[0];
+  let amountToCancel = 0;
+  let categoryCol = -1;
+
+  // Search from Column 14 (N) onwards
+  for (let c = 13; c < rowVals.length; c++) {
+    const head = sheet.getRange(2, c + 1).getValue();
+    if (head && rowVals[c] !== "" && typeof rowVals[c] === 'number' && rowVals[c] !== 0) {
+      amountToCancel = rowVals[c];
+      categoryCol = c + 1;
+      break;
+    }
+  }
+
+  // Update logic:
+  // 1. Column F (6): Note/System ID -> Set to "ยกเลิก"
+  sheet.getRange(target, 6).setValue("ยกเลิก");
+
+  if (categoryCol !== -1) {
+    // 2. Set Category column to 0 (Cancel the reservation in that category)
+    sheet.getRange(target, categoryCol).setValue(0);
+    // 3. Set Column B (2) to the canceled amount
+    sheet.getRange(target, 2).setValue(amountToCancel);
+  }
+
+  budget_applyFormulas(sheet, target);
+  return { success: true };
 }
