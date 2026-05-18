@@ -158,6 +158,7 @@ function budget_submitDeduct(data, planKey) {
     if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
     sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
     [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+    sheet.getRange(nr, 3).setValue(new Date()); 
     if (data.name) sheet.getRange(nr, 9).setValue(data.name);
     const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
     for (let c = 13; c < pVals.length; c++) {
@@ -178,6 +179,7 @@ function budget_submitDeduct(data, planKey) {
 
     if (data.name) sheet.getRange(target, 9).setValue(data.name);
     if (data.colF) sheet.getRange(target, 6).setValue(data.colF);
+    sheet.getRange(target, 3).setValue(new Date()); 
     sheet.getRange(target, 4).setValue(data.liquidateRefNo);
     const rowVals = sheet.getRange(target, 1, 1, sheet.getLastColumn()).getValues()[0];
     for (let c = 13; c < rowVals.length; c++) {
@@ -219,6 +221,7 @@ function budget_submitOffset(data, planKey) {
   if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
   sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
   [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
   for (let c = 13; c < pVals.length; c++) {
@@ -315,6 +318,7 @@ function budget_submitDeductAdd(data, planKey) {
   if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
   sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
   [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
   for (let c = 13; c < pVals.length; c++) {
