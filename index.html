@@ -419,7 +419,8 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 12.5px;
-      table-layout: auto;
+      table-layout: fixed;
+      /* Lock column widths */
     }
 
     .data-table th:nth-child(1),
@@ -1126,21 +1127,21 @@
       <!-- ALL DATA TABLE -->
       <div id="view-table" class="app-view">
         <div class="table-wrapper">
-          <table class="data-table">
+          <table class="data-table" style="table-layout: fixed; width: 100%;">
             <thead>
               <tr>
                 <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAll"
                     onchange="toggleAllRows(this.checked)"></th>
                 <th style="width:60px; text-align:center;">ID</th>
-                <th style="width:90px; text-align:center; white-space:nowrap;">วันที่</th>
-                <th style="width:80px; text-align:center;">หมวด</th>
-                <th style="width:110px; text-align:center; white-space:nowrap;">เลขหนังสือ</th>
-                <th style="width:160px; white-space:nowrap;">ชื่อผู้เบิก</th>
-                <th style="width:60px; text-align:center;">ฝ่าย</th>
-                <th style="width:auto; min-width:300px;">รายการ</th>
-                <th style="width:100px; text-align:right;">เงินกัน</th>
-                <th style="width:110px; text-align:right;">ตัดยอด/คืน</th>
-                <th style="width:140px; text-align:center;">สถานะ GF / เลขระบบ</th>
+                <th style="width:90px; text-align:center;">วันที่</th>
+                <th style="width:70px; text-align:center;">หมวด</th>
+                <th style="width:110px; text-align:center;">เลขหนังสือ</th>
+                <th style="width:140px;">ชื่อผู้เบิก</th>
+                <th style="width:55px; text-align:center;">ฝ่าย</th>
+                <th style="width:auto;">รายการ</th>
+                <th style="width:95px; text-align:right;">เงินกัน</th>
+                <th style="width:95px; text-align:right;">ตัดยอด/คืน</th>
+                <th style="width:130px; text-align:center;">สถานะ / เลขระบบ</th>
               </tr>
             </thead>
             <tbody id="tableBody">
