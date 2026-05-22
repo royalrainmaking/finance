@@ -100,7 +100,10 @@ function budget_getInitialData(planKey) {
       letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), 
       refNo: row[6], name: row[8], dept: row[9], desc: row[12], 
       catCode: row[10] || catCode, catName, amount: reserveAmount, amountDeduct: deductAmount, 
-      col, colF: row[5], liquidateRefNo: liqRef 
+      col, 
+      colF: budget_formatThaiDate(row[5]), 
+      colE: budget_formatThaiDate(row[4]), 
+      liquidateRefNo: liqRef 
     };
   }).reverse();
   return { entries, todayThai: budget_formatThaiDate(new Date()) };

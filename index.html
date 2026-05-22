@@ -13,19 +13,24 @@
 
   <style>
     :root {
-      --primary: #475569;
-      --primary-light: #f1f5f9;
-      --primary-dark: #1e293b;
+      --primary: #6366f1;
+      --primary-light: #eef2ff;
+      --primary-dark: #4338ca;
       --bg-main: #f8fafc;
-      --sidebar-bg: #ffffff;
-      --text-main: #1e293b;
+      --sidebar-bg: #1e293b;
+      --sidebar-text: #f1f5f9;
+      --sidebar-active: #334155;
+      --text-main: #0f172a;
       --text-muted: #64748b;
-      --border: #cbd5e1;
+      --border: #e2e8f0;
       --white: #ffffff;
-      --radius: 8px;
-      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     }
-
 
     * {
       margin: 0;
@@ -38,86 +43,83 @@
       background-color: var(--bg-main);
       color: var(--text-main);
       height: 100vh;
-      overflow: hidden;
       display: flex;
+      overflow: hidden;
     }
 
+    /* Sidebar */
     .sidebar {
-      width: 280px;
+      width: 260px;
       background: var(--sidebar-bg);
-      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
-    }
-
-
-    .logo {
-      padding: 24px;
-      margin-bottom: 20px;
-      border-left: 5px solid var(--primary);
-      margin-left: 16px;
       transition: 0.3s;
-      flex-shrink: 0;
+      z-index: 1000;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
     }
 
+    .logo-container {
+      padding: 32px 24px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .logo-img {
+      height: 60px;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    }
+
+    .logo-text {
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+      margin-top: 12px;
+      letter-spacing: 1px;
+    }
 
     .nav-menu {
       flex: 1;
-      padding: 0 12px 30px;
+      padding: 0 16px;
       overflow-y: auto;
     }
-
-    .nav-menu::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    .nav-menu::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
-      border-radius: 10px;
-    }
-
-    .nav-menu::-webkit-scrollbar-thumb:hover {
-      background: #cbd5e1;
-    }
-
 
     .nav-category {
       font-size: 10px;
       font-weight: 800;
-      color: #94a3b8;
+      color: rgba(255, 255, 255, 0.3);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       padding: 24px 12px 8px;
     }
 
-
-
     .nav-item {
-      padding: 12px 18px;
-      border-radius: var(--radius);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
       margin-bottom: 4px;
       cursor: pointer;
       font-size: 13px;
-      font-weight: 500;
-      color: var(--text-main);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.65);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       transition: 0.2s;
     }
 
     .nav-item:hover {
-      background: var(--primary-light);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
     }
 
     .nav-item.active {
       background: var(--primary);
       color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-
+    /* Main Content */
     .main-content {
       flex: 1;
       display: flex;
@@ -126,31 +128,39 @@
     }
 
     .top-bar {
-      height: 70px;
-      background: var(--white);
-      border-bottom: 2px solid var(--border);
+      height: 80px;
+      background: white;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      transition: 0.3s;
+      padding: 0 40px;
     }
 
-    .status-pill {
+    .view-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .status-badge {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
-      border-radius: 4px;
+      padding: 8px 16px;
       background: #f8fafc;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
-
 
     .status-dot {
       width: 8px;
@@ -173,23 +183,9 @@
       background: #ef4444;
     }
 
-    @keyframes pulse {
-      0% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-
-      100% {
-        opacity: 1;
-      }
-    }
-
     .plan-bar {
       background: white;
-      padding: 8px 32px;
+      padding: 10px 40px;
       border-bottom: 1px solid var(--border);
       display: flex;
       gap: 8px;
@@ -197,8 +193,8 @@
     }
 
     .plan-tab {
-      padding: 10px 20px;
-      border-radius: var(--radius);
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
       font-size: 12px;
       font-weight: 700;
       color: var(--text-muted);
@@ -206,50 +202,26 @@
       background: #f1f5f9;
       white-space: nowrap;
       transition: 0.2s;
-      border: 1px solid var(--border);
-    }
-
-    .plan-tab:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
+      border: 1px solid transparent;
     }
 
     .plan-tab.active {
       background: var(--primary);
       color: white;
-      border-color: var(--primary);
-      box-shadow: none;
-      transform: none;
     }
-
 
     .view-container {
       flex: 1;
-      padding: 20px;
+      padding: 32px 40px;
       overflow: auto;
-      position: relative;
+      /* Allow both vertical and horizontal scroll */
     }
-
-    @media (max-width: 768px) {
-      .view-container {
-        padding: 10px;
-      }
-
-      .top-bar {
-        padding: 0 20px;
-      }
-    }
-
 
     .app-view {
       display: none;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .app-view.active {
-      display: block;
-      animation: fadeUp 0.3s ease;
+      width: 100%;
+      margin: 0;
+      animation: fadeUp 0.4s ease;
     }
 
     @keyframes fadeUp {
@@ -259,25 +231,75 @@
       }
     }
 
-    .form-wrapper {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 32px;
+    .app-view.active {
+      display: block;
+    }
+
+    /* Dashboard */
+    .hero-card {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      color: white;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm);
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    /* UI Components */
+    .form-wrapper {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
+      gap: 24px;
     }
 
     .field {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .field.full {
@@ -287,79 +309,303 @@
     label {
       font-size: 11px;
       font-weight: 800;
-      color: var(--primary-dark);
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
     }
 
     input,
     select,
     textarea {
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
       font-size: 14px;
-      background: #ffffff;
+      background: #f8fafc;
       transition: 0.2s;
-      color: var(--text-main);
     }
-
 
     input:focus {
       outline: none;
       border-color: var(--primary);
       background: white;
+      box-shadow: 0 0 0 3px var(--primary-light);
     }
 
     .submit-btn {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 24px;
+    }
+
+    .submit-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1.5px solid var(--border);
+    }
+
+    .table-container {
+      background: white;
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      /* Slightly smaller for density */
+      table-layout: auto;
+      /* Fluid layout to fit screen */
+    }
+
+    /* Fixed Column Widths */
+    /* Responsive Column Rules */
+    .data-table th:nth-child(1),
+    .data-table td:nth-child(1) {
+      width: 50px;
+      text-align: center;
+    }
+
+    /* ID */
+    .data-table th:nth-child(2),
+    .data-table td:nth-child(2) {
+      width: 85px;
+      white-space: nowrap;
+    }
+
+    /* Date */
+    .data-table th:nth-child(3),
+    .data-table td:nth-child(3) {
+      width: 70px;
+      text-align: center;
+    }
+
+    /* Cat */
+    .data-table th:nth-child(8),
+    .data-table td:nth-child(8) {
+      width: 100px;
+      text-align: right;
+    }
+
+    /* Budget */
+    .data-table th:nth-child(9),
+    .data-table td:nth-child(9) {
+      width: 100px;
+      text-align: right;
+    }
+
+    /* Liquidated */
+
+    /* Fluid Columns (RefNo, Name, Dept, Desc, ColF) will auto-scale */
+    .data-table td:nth-child(4),
+    .data-table td:nth-child(5),
+    .data-table td:nth-child(7),
+    .data-table td:nth-child(10) {
+      min-width: 100px;
+    }
+
+    .data-table th {
+      background: #f1f5f9;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 800;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--border);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table th:last-child {
+      border-right: none;
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: top;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    .data-table td:last-child {
+      border-right: none;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover {
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 16px 24px 16px 56px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      font-size: 24px;
+      color: var(--text-muted);
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 24px 16px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: 0.2s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .action-btn i {
+      font-size: 32px;
+      color: var(--primary);
+    }
+
+    .action-btn span {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    #modalOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-card {
+      width: 440px;
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-dark);
       color: white;
       border: none;
       border-radius: 12px;
       font-weight: 700;
       cursor: pointer;
+      margin-top: 24px;
+    }
+
+    #loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid #f1f5f9;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .type-pill {
+      display: flex;
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .type-pill label {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
       transition: 0.2s;
     }
 
-    .submit-btn:disabled {
-      background: #cbd5e1 !important;
-      cursor: not-allowed;
-    }
-
-    .preview-box {
-      margin-top: 20px;
-      padding: 0;
-      border-radius: 16px;
-      border: 1px solid var(--border);
+    .type-pill input {
       display: none;
-      overflow: hidden;
     }
 
-    .preview-box.active {
-      display: block;
+    .type-pill input:checked+label {
       background: white;
-      box-shadow: var(--shadow);
-    }
-
-    .preview-card {
-      border-left: 6px solid var(--primary);
-      padding: 20px;
-      position: relative;
-      transition: 0.3s;
-    }
-
-    .preview-card.error {
-      border-left-color: #ef4444;
-      background: #fef2f2;
-    }
-
-    .preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 15px;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .cat-badge {
@@ -367,13 +613,13 @@
       color: var(--primary-dark);
       padding: 4px 12px;
       border-radius: 8px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
       border: 1px solid var(--primary);
     }
 
     .status-tag {
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 800;
@@ -390,181 +636,54 @@
       color: #075985;
     }
 
-    .meta-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      font-size: 13px;
-      margin-top: 10px;
-      color: var(--text-muted);
+    .status-success {
+      background: #dcfce7;
+      color: #166534;
     }
 
-    #modalOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-
-    #modalOverlay.active {
-      display: flex;
-    }
-
-    .modal-card {
-      width: 400px;
-      background: white;
-      border-radius: 28px;
-      padding: 32px;
-      text-align: center;
-    }
-
-    .modal-btn {
-      padding: 12px 32px;
-      background: #0f172a;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .action-btn {
-      padding: 20px 15px;
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      background: white;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      transition: 0.2s;
-    }
-
-    .action-btn:hover {
-      border-color: var(--primary);
-      background: var(--primary-light);
-      transform: translateY(-2px);
-    }
-
-    .action-btn i {
-      font-size: 24px;
-    }
-
-    .action-btn span {
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    #loader {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.8);
-      z-index: 3000;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f1f5f9;
-      border-top: 4px solid var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .type-pill {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+    .status-pending {
       background: #f1f5f9;
-      padding: 6px;
-      border-radius: 12px;
+      color: #475569;
     }
 
-    .type-pill label {
+    .gf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .gf-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .gf-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .gf-card i {
+      font-size: 48px;
+      color: var(--primary);
+      background: var(--primary-light);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
-      transition: 0.2s;
+      margin: 0 auto 24px;
     }
 
-    .type-pill input {
-      display: none;
-    }
-
-    .type-pill input:checked+label {
-      background: var(--primary);
-      color: white;
-    }
-
-    .search-box {
-      position: relative;
-      margin-bottom: 25px;
-    }
-
-    .search-box input {
-      width: 100%;
-      padding: 18px 25px 18px 55px;
-      border-radius: 18px;
-      border: 2px solid var(--border);
-      font-size: 16px;
-      font-weight: 600;
-      box-shadow: var(--shadow);
-    }
-
-    .search-box i {
-      position: absolute;
-      left: 20px;
-      top: 20px;
-      font-size: 20px;
-      color: var(--text-muted);
-    }
-
-    .search-result-item {
-      background: white;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 15px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .search-result-item:hover {
-      transform: scale(1.01);
-      border-color: var(--primary);
-      box-shadow: var(--shadow);
+    #searchDetail {
+      margin-top: 32px;
     }
 
     .floating-suggestions {
@@ -575,188 +694,89 @@
       background: white;
       border: 1px solid var(--border);
       border-radius: 12px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-lg);
       z-index: 100;
       display: none;
-      max-height: 200px;
+      max-height: 250px;
       overflow-y: auto;
       padding: 8px;
+      margin-top: 4px;
     }
 
     .sug-item {
-      padding: 10px 15px;
+      padding: 12px 16px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
-      border-bottom: 1px solid #f1f5f9;
       transition: 0.2s;
     }
 
     .sug-item:hover {
       background: var(--primary-light);
-      color: var(--primary-dark);
-    }
-
-    .sug-item:last-child {
-      border-bottom: none;
     }
 
     #splash {
-      position: absolute;
-      inset: 0;
-      background: var(--bg-main);
-      z-index: 100;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      min-height: 70vh;
       text-align: center;
+      padding: 40px;
     }
 
     #splash.hidden {
       display: none;
     }
 
-    #view-table {
-      max-width: 100% !important;
-      width: 100% !important;
-      margin: 0 !important;
-    }
-
-    /* Table Styles */
-    .table-wrapper {
+    .plan-selector-card {
       background: white;
-      border-radius: var(--radius);
+      padding: 48px;
+      border-radius: 32px;
+      max-width: 1000px;
+      width: 100%;
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      width: 100%;
-      /* Corrected: allow overflow to be handled by parent view-container */
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      min-width: 1000px;
-    }
-
-
-    .data-table th {
-      background: #f1f5f9;
-      color: var(--primary-dark);
-      text-align: left;
-      padding: 12px 15px;
-      font-weight: 700;
-      font-size: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      white-space: nowrap;
-      border-bottom: 2px solid var(--border);
-      border-right: 1px solid var(--border);
-    }
-
-    .data-table th:last-child {
-      border-right: none;
-    }
-
-
-    .data-table td {
-      padding: 12px 15px;
-      border-bottom: 1px solid var(--border);
-      border-right: 1px solid #f1f5f9;
+      box-shadow: var(--shadow-sm);
       color: var(--text-main);
     }
 
-    .data-table td:last-child {
-      border-right: none;
-    }
-
-
-
-
-    .data-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .data-table tr:hover {
-      background: #f8fafc;
-      cursor: pointer;
-    }
-
-    .data-table .id-col {
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .data-table .amt-col {
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .filter-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-    }
-
-    .filter-bar select {
-      flex: 1;
-      min-width: 150px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      border: 2px solid var(--border);
-    }
-
-    .gf-grid {
+    .plan-options {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
-      margin-top: 20px;
+      margin-top: 32px;
     }
 
-    .gf-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 40px 30px;
-      text-align: center;
-      transition: 0.2s;
+    .plan-option {
+      padding: 24px 20px;
+      margin-bottom: 12px;
+      border: 2.5px solid #e2e8f0;
+      border-radius: 16px;
       cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s;
+      text-align: left;
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: 16px;
-      text-decoration: none;
+      color: #1e293b;
     }
 
-    .gf-card:hover {
+    .plan-option:hover {
       border-color: var(--primary);
-      background: #f8fafc;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-
-    .gf-card .material-symbols-outlined {
-      font-size: 48px;
-      color: var(--primary);
       background: var(--primary-light);
-      padding: 15px;
-      border-radius: 50%;
+      transform: translateY(-2px);
     }
 
-    .gf-card h3 {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--primary-dark);
-      line-height: 1.4;
-    }
-
-    .gf-card p {
-      font-size: 12px;
-      color: var(--text-muted);
+    .plan-option i {
+      width: 40px;
+      height: 40px;
+      background: #f1f5f9;
+      color: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 
@@ -766,113 +786,142 @@
 
   <div id="loader">
     <div class="spinner"></div>
-    <p style="margin-top:15px; font-weight:bold;">กำลังประมวลผล...</p>
+    <p style="margin-top:16px; font-weight:800; color:var(--primary-dark);">กำลังประมวลผลข้อมูล...</p>
   </div>
+
   <div id="modalOverlay">
     <div class="modal-card">
-      <div id="mIcon" style="margin-bottom:15px;"><span class="material-symbols-outlined"
-          style="font-size: 64px; color: #10b981;">check_circle</span></div>
-      <div id="mTitle" style="font-size:20px; font-weight:800; margin-bottom:10px;">สำเร็จ</div>
-      <div id="mBody" style="font-size:14px; color:var(--text-muted); line-height:1.5;">บันทึกข้อมูลเรียบร้อยแล้ว</div>
-      <button class="modal-btn" onclick="closeModal()">ตกลง</button>
+      <div id="mIcon" style="margin-bottom:20px;">
+        <span class="material-symbols-outlined" style="font-size: 80px; color: #10b981;">check_circle</span>
+      </div>
+      <div id="mTitle" style="font-size:24px; font-weight:800; margin-bottom:12px; color:var(--text-main);">
+        ดำเนินการสำเร็จ</div>
+      <div id="mBody" style="font-size:15px; color:var(--text-muted); line-height:1.6; margin-bottom:32px;">
+        บันทึกข้อมูลและอัปเดตระบบเรียบร้อยแล้ว</div>
+      <button class="modal-btn" style="width:100%;" onclick="closeModal()">ตกลง เข้าใจแล้ว</button>
     </div>
   </div>
-
 
   <div id="actionOverlay" class="modalOverlay"
-    style="position:fixed; inset:0; background:rgba(15,23,42,0.4); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:2000;">
-    <div class="modal-card" style="width:450px;">
-      <div style="font-size:14px; font-weight:800; color:var(--text-muted); margin-bottom:5px;">
-        เลือกการดำเนินการสำหรับรายการ</div>
-      <div id="actionIdDisplay" style="font-size:24px; font-weight:800; margin-bottom:20px; color:var(--primary-dark);">
-        #ID</div>
+    style="position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:2000;">
+    <div class="modal-card" style="max-width:480px;">
+      <div
+        style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+        คำขอในระบบ</div>
+      <div id="actionIdDisplay" style="font-size:32px; font-weight:800; margin-bottom:24px; color:var(--primary-dark);">
+        #ID-0000</div>
       <div class="action-grid">
-        <button class="action-btn" onclick="doAction('deduct')"><span class="material-symbols-outlined">payments</span>
-          ตัดยอด</button>
-        <button class="action-btn" onclick="doAction('deduct-add')"><span
-            class="material-symbols-outlined">library_add</span> ตัดยอดเพิ่ม</button>
-        <button class="action-btn" onclick="doAction('offset')"><span class="material-symbols-outlined">sync_alt</span>
-          หักล้าง</button>
-        <button class="action-btn" onclick="doAction('reserve-add')"><span
-            class="material-symbols-outlined">post_add</span> กันเงินเพิ่ม</button>
-        <button class="action-btn" onclick="doAction('cancel')"><span class="material-symbols-outlined">cancel</span>
-          ยกเลิก</button>
-        <button class="action-btn" onclick="doAction('edit')"><span class="material-symbols-outlined">edit_square</span>
-          แก้ไข</button>
-
+        <button class="action-btn" id="btn-deduct" onclick="doAction('deduct')">
+          <span class="material-symbols-outlined">payments</span>
+          <span>ตัดยอด</span>
+        </button>
+        <button class="action-btn" id="btn-deduct-add" onclick="doAction('deduct-add')">
+          <span class="material-symbols-outlined">library_add</span>
+          <span>ตัดยอดเพิ่ม</span>
+        </button>
+        <button class="action-btn" id="btn-offset" onclick="doAction('offset')">
+          <span class="material-symbols-outlined">sync_alt</span>
+          <span>หักล้าง</span>
+        </button>
+        <button class="action-btn" id="btn-reserve-add" onclick="doAction('reserve-add')">
+          <span class="material-symbols-outlined">post_add</span>
+          <span>กันเงินเพิ่ม</span>
+        </button>
+        <button class="action-btn" id="btn-cancel" style="border-color:#fecaca;" onclick="doAction('cancel')">
+          <span class="material-symbols-outlined" style="color:#ef4444;">cancel</span>
+          <span style="color:#ef4444;">ยกเลิกรายการ</span>
+        </button>
+        <button class="action-btn" id="btn-edit" onclick="doAction('edit')">
+          <span class="material-symbols-outlined">edit_square</span>
+          <span>แก้ไขข้อมูล</span>
+        </button>
       </div>
-      <button class="modal-btn" style="background:#f1f5f9; color:var(--text-main); margin-top:25px;"
-        onclick="closeActionMenu()">ยกเลิก</button>
+      <button class="modal-btn"
+        style="background:#f8fafc; color:var(--text-main); margin-top:24px; width:100%; border:1px solid #e2e8f0;"
+        onclick="closeActionMenu()">ปิดเมนู</button>
     </div>
-  </div>
-
-  </div>
   </div>
 
   <aside class="sidebar">
-    <div class="logo">
-      <img src="Emblem_of_Department_of_Royal_Rainmaking_and_Agricultural_Aviation.png" alt="Logo"
-        style="height: 80px; width: auto; display: block; margin: 0 auto 10px;">
-
-      <div style="font-size: 14px; color: var(--primary-dark); font-weight: 800;">กองบริหารการบินเกษตร</div>
+    <div class="logo-container">
+      <img src="Emblem_of_Department_of_Royal_Rainmaking_and_Agricultural_Aviation.png" class="logo-img" alt="Logo">
+      <div class="logo-text">BUDGET FLOW PRO</div>
     </div>
+
     <nav class="nav-menu">
-      <div class="nav-category">ข้อมูลหลัก</div>
-      <div class="nav-item active" id="nav-table" onclick="setView('table', this); renderTable()">
-        <span class="material-symbols-outlined">grid_on</span> <span>ตารางทั้งหมด</span>
+      <div class="nav-category">ศูนย์กลางข้อมูล</div>
+      <div class="nav-item active" id="nav-home" onclick="showHome()">
+        <span class="material-symbols-outlined">home</span>
+        <span>หน้าแรก / เลือกแผน</span>
+      </div>
+      <div class="nav-item" id="nav-table" onclick="setView('table', this); renderTable()">
+        <span class="material-symbols-outlined">grid_on</span>
+        <span>ตารางรายการทั้งหมด</span>
       </div>
 
-      <div class="nav-category">การกันเงิน</div>
+      <div class="nav-category">การจัดการงบประมาณ</div>
       <div class="nav-item" id="nav-reserve" onclick="setView('reserve', this)">
-        <span class="material-symbols-outlined">edit_document</span> <span>กันเงิน</span>
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>กันเงินใหม่</span>
       </div>
       <div class="nav-item" id="nav-reserve-add" onclick="setView('reserve-add', this)">
-        <span class="material-symbols-outlined">post_add</span> <span>กันเงินเพิ่ม</span>
+        <span class="material-symbols-outlined">post_add</span>
+        <span>กันเงินเพิ่มเติม</span>
       </div>
-      <div class="nav-item" id="nav-cancel" onclick="setView('cancel', this)">
-        <span class="material-symbols-outlined">cancel</span> <span>ยกเลิกกันเงิน</span>
-      </div>
-
-
-
-      <div class="nav-category">การเบิกจ่ายและหักล้าง</div>
       <div class="nav-item" id="nav-deduct" onclick="setView('deduct', this)">
-        <span class="material-symbols-outlined">payments</span> <span>ตัดยอด</span>
+        <span class="material-symbols-outlined">payments</span>
+        <span>ตัดยอดงบประมาณ</span>
       </div>
       <div class="nav-item" id="nav-deduct-add" onclick="setView('deduct-add', this)">
-        <span class="material-symbols-outlined">library_add</span> <span>ตัดยอดเพิ่ม</span>
+        <span class="material-symbols-outlined">library_add</span>
+        <span>ตัดยอดเพิ่มเติม</span>
       </div>
       <div class="nav-item" id="nav-offset" onclick="setView('offset', this)">
-        <span class="material-symbols-outlined">sync_alt</span> <span>หักล้าง</span>
+        <span class="material-symbols-outlined">sync_alt</span>
+        <span>หักล้างเงินยืม</span>
       </div>
-
-      <div class="nav-category">ระบบ</div>
-      <div class="nav-item" id="nav-gf" onclick="setView('gf', this)">
-        <span class="material-symbols-outlined">auto_mode</span> <span>GF อัตโนมัติ</span>
+      <div class="nav-item" id="nav-cancel" onclick="setView('cancel', this)">
+        <span class="material-symbols-outlined">cancel</span>
+        <span>ยกเลิกรายการกันเงิน</span>
       </div>
       <div class="nav-item" id="nav-edit" onclick="setView('edit', this)">
-        <span class="material-symbols-outlined">edit_square</span> <span>แก้ไขรายการ</span>
-      </div>
-      <div class="nav-item" id="nav-search" onclick="setView('search', this)">
-        <span class="material-symbols-outlined">manage_search</span> <span>ค้นหา/ประวัติ</span>
+        <span class="material-symbols-outlined">edit_square</span>
+        <span>แก้ไขข้อมูล</span>
       </div>
 
+      <div class="nav-category">เครื่องมือเสริม</div>
+      <div class="nav-item" id="nav-search" onclick="setView('search', this)">
+        <span class="material-symbols-outlined">manage_search</span>
+        <span>ค้นหา & จัดการ</span>
+      </div>
+      <div class="nav-item" id="nav-gf" onclick="setView('gf', this)">
+        <span class="material-symbols-outlined">auto_fix</span>
+        <span>ระบบ GF อัตโนมัติ</span>
+      </div>
     </nav>
 
-    <div
-      style="padding:20px; font-size:10px; color:var(--text-muted); margin:20px; background:#f1f5f9; border-radius:15px; display: none;">
-      <label>API URL:</label><input type="text" id="apiInput" style="width:100%; margin-top:5px; font-size:10px;">
+    <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display:none;">
+      <label style="color: rgba(255,255,255,0.3); font-size: 10px;">Backend URL</label>
+      <input type="text" id="apiInput"
+        style="width: 100%; background: rgba(255,255,255,0.05); border: none; color: white; font-size: 10px; margin-top: 4px; padding: 8px; border-radius: 4px;">
     </div>
-
   </aside>
 
   <main class="main-content">
     <header class="top-bar">
-      <h2 id="viewTitle">ตารางทั้งหมด</h2>
-      <div style="display: flex; align-items: center; gap: 20px;">
-
-        <div id="dateDisplay" style="font-weight:700; font-size: 14px;">-- -- ----</div>
-        <div class="status-pill">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <button id="backBtn" onclick="goBack()"
+          style="background:none; border:none; cursor:pointer; color:var(--text-muted); display:none; align-items:center; justify-content:center;">
+          <span class="material-symbols-outlined" style="font-size:32px;">chevron_left</span>
+        </button>
+        <div class="view-title" id="viewTitle">หน้าแรก / เลือกแผน</div>
+      </div>
+      <div class="top-bar-right">
+        <div class="date-badge">
+          <span class="material-symbols-outlined" style="font-size:18px;">calendar_today</span>
+          <span id="dateDisplay">-- -- ----</span>
+        </div>
+        <div class="status-badge">
           <div id="statusDot" class="status-dot"></div>
           <span id="statusText">พร้อมเริ่มงาน</span>
         </div>
@@ -880,32 +929,83 @@
     </header>
 
     <div class="plan-bar">
-      <div class="plan-tab" data-plan="1.ฝนหลวง" onclick="setPlan(this)">1. การปฏิบัติการฝนหลวง</div>
-      <div class="plan-tab" data-plan="2.ด้านการบิน" onclick="setPlan(this)">2. บริการด้านการบิน</div>
+      <div class="plan-tab" data-plan="1.ฝนหลวง" onclick="setPlan(this)">1. ฝนหลวง</div>
+      <div class="plan-tab" data-plan="2.ด้านการบิน" onclick="setPlan(this)">2. การบิน</div>
       <div class="plan-tab" data-plan="2.1 บินสาธาฯ" onclick="setPlan(this)">2.1 บินสาธาฯ</div>
-      <div class="plan-tab" data-plan="3.แก้ปัญหาฝุ่น" onclick="setPlan(this)">3. แก้ไขปัญหาฝุ่นละออง</div>
-      <div class="plan-tab" data-plan="4.บรรเทาลูกเห็บ" onclick="setPlan(this)">4. บรรเทาพายุลูกเห็บ</div>
+      <div class="plan-tab" data-plan="3.แก้ปัญหาฝุ่น" onclick="setPlan(this)">3. ฝุ่นละออง</div>
+      <div class="plan-tab" data-plan="4.บรรเทาลูกเห็บ" onclick="setPlan(this)">4. ลูกเห็บ</div>
     </div>
 
     <div class="view-container">
       <div id="splash">
-        <div>
-          <div style="margin-bottom: 20px;"><span class="material-symbols-outlined"
-              style="font-size: 64px; color: var(--primary);">inventory_2</span></div>
-          <h3 style="font-weight: 800; margin-bottom: 5px;">พร้อมทำงาน</h3>
-          <p style="color: var(--text-muted); font-size: 13px;">กรุณาคลิกเลือก <b>แท็บแผนปฏิบัติการ</b>
-            ด้านบน<br>เพื่อเริ่มต้นเชื่อมต่อฐานข้อมูล</p>
+        <div class="plan-selector-card">
+          <div style="margin-bottom: 24px;">
+            <span class="material-symbols-outlined"
+              style="font-size: 64px; color: var(--primary);">account_balance_wallet</span>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">กรุณาเลือกแผนปฏิบัติงาน</h2>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 32px;">
+            เลือกแหล่งข้อมูลเพื่อเริ่มต้นจัดการงบประมาณ</p>
+
+          <div class="plan-options">
+            <div class="plan-option" onclick="setPlanFromSplash('1.ฝนหลวง')">
+              <i><span class="material-symbols-outlined">water_drop</span></i>
+              <div>
+                <div style="font-size: 15px;">1. การปฏิบัติการฝนหลวง</div>
+                <div style="font-size: 11px; opacity: 0.6;">Mission Phase 1</div>
+              </div>
+            </div>
+            <div class="plan-option" onclick="setPlanFromSplash('2.ด้านการบิน')">
+              <i><span class="material-symbols-outlined">flight</span></i>
+              <div>
+                <div style="font-size: 15px;">2. บริการด้านการบิน</div>
+                <div style="font-size: 11px; opacity: 0.6;">Aviation Support</div>
+              </div>
+            </div>
+            <div class="plan-option" onclick="setPlanFromSplash('2.1 บินสาธาฯ')">
+              <i><span class="material-symbols-outlined">medical_services</span></i>
+              <div>
+                <div style="font-size: 15px;">2.1 บริการด้านการบินสาธารณสุข</div>
+                <div style="font-size: 11px; opacity: 0.6;">Medical Services</div>
+              </div>
+            </div>
+            <div class="plan-option" onclick="setPlanFromSplash('3.แก้ปัญหาฝุ่น')">
+              <i><span class="material-symbols-outlined">air</span></i>
+              <div>
+                <div style="font-size: 15px;">3. แก้ไขปัญหาฝุ่นละออง PM 2.5</div>
+                <div style="font-size: 11px; opacity: 0.6;">Dust Mitigation</div>
+              </div>
+            </div>
+            <div class="plan-option" onclick="setPlanFromSplash('4.บรรเทาลูกเห็บ')">
+              <i><span class="material-symbols-outlined">ac_unit</span></i>
+              <div>
+                <div style="font-size: 15px;">4. การบรรเทาพายุลูกเห็บ</div>
+                <div style="font-size: 11px; opacity: 0.6;">Hail Prevention</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
 
+
+
+
       <!-- ALL DATA TABLE (NEW DEFAULT) -->
-      <div id="view-table" class="app-view active">
+      <div id="view-table" class="app-view">
         <div class="search-box" style="margin-bottom: 10px;">
           <input type="text" id="tableSearchInput"
             placeholder="ค้นหาจากทุกอย่างในตาราง (ID, เลขหนังสือ, ชื่อ, รายการ...)" oninput="renderTable(this.value)">
         </div>
         <div class="filter-bar">
+          <div class="type-pill" style="margin-bottom:0; flex:1; min-width:360px;">
+            <input type="radio" name="tableStatus" id="tsPending" value="pending" checked
+              onchange="renderTable()"><label for="tsPending">ยังไม่ตัดยอด</label>
+            <input type="radio" name="tableStatus" id="tsLiqPendingGF" value="liq-pending-gf"
+              onchange="renderTable()"><label for="tsLiqPendingGF">ตัดยอดแล้ว/ยังไม่ GF</label>
+            <input type="radio" name="tableStatus" id="tsCompleted" value="completed" onchange="renderTable()"><label
+              for="tsCompleted">GF สำเร็จแล้ว</label>
+          </div>
           <select id="filterDept" onchange="renderTable(document.getElementById('tableSearchInput').value)">
             <option value="">-- กรองตามฝ่าย --</option>
           </select>
@@ -928,7 +1028,7 @@
                 <th>รายการ</th>
                 <th style="text-align:right">เงินกัน</th>
                 <th style="text-align:right">เงินตัดยอด/คืน</th>
-                <th>เลขระบบตัดยอด</th>
+                <th style="text-align:center">สถานะ GF / เลขระบบ</th>
               </tr>
             </thead>
             <tbody id="tableBody">
@@ -1258,7 +1358,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbzsmqMa2cRGMcHIXxAYRBZ3bzzBNzXt2h6c4AXJf4JRW50pnQwQwGYRkT4QZK6NWnZB/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbwoj_idK7ymlDFdksrgBF6TpH775ygBAroLiuOs60vAQWtyD-8m7DRWIru03v5oOaMP/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -1415,9 +1515,38 @@
 
     function suggestDesc(select, targetId) { }
 
+    function goBack() {
+      // Default back behavior: always go to table view if possible, otherwise home
+      if (currentPlan) {
+        setView('table', document.getElementById('nav-table'));
+        renderTable();
+      } else {
+        showHome();
+      }
+    }
+
+    function showHome() {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('nav-home').classList.add('active');
+      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
+      document.getElementById('splash').classList.remove('hidden');
+      document.getElementById('viewTitle').innerText = 'หน้าแรก / เลือกแผน';
+      document.querySelector('.plan-bar').style.display = 'none';
+      if (document.getElementById('backBtn')) document.getElementById('backBtn').style.display = 'none';
+    }
+
+    function setPlanFromSplash(plan) {
+      document.getElementById('loader').style.display = 'flex';
+      document.getElementById('splash').classList.add('hidden');
+      const el = document.querySelector(`.plan-tab[data-plan="${plan}"]`);
+      if (el) setPlan(el);
+      setView('table', document.getElementById('nav-table'));
+    }
+
     function setPlan(el) {
       document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active'); currentPlan = el.dataset.plan;
+      el.classList.add('active');
+      currentPlan = el.dataset.plan;
       updateTheme(currentPlan);
       updateCategoryDropdowns(currentPlan);
       init();
@@ -1446,20 +1575,35 @@
     }
 
     function setView(v, el) {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active');
+      if (!el) return;
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+
       document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
-      const t = document.getElementById('view-' + v); if (t) t.classList.add('active');
-      document.getElementById('viewTitle').innerText = el.querySelector('span:not(.material-symbols-outlined)').innerText;
+      const t = document.getElementById('view-' + v);
+      if (t) t.classList.add('active');
+
+      const titleSpan = el.querySelector('span:not(.material-symbols-outlined)');
+      if (titleSpan) document.getElementById('viewTitle').innerText = titleSpan.innerText;
+
+      // Handle Back Button Visibility
+      const backBtn = document.getElementById('backBtn');
+      if (v === 'home' || v === 'table' || v === 'dashboard') {
+        if (backBtn) backBtn.style.display = 'none';
+      } else {
+        if (backBtn) backBtn.style.display = 'flex';
+      }
 
       const splash = document.getElementById('splash');
       const planBar = document.querySelector('.plan-bar');
+
       if (v === 'gf') {
         if (splash) splash.style.display = 'none';
         if (planBar) planBar.style.display = 'none';
       } else {
         if (planBar) planBar.style.display = 'flex';
         if (splash) {
-          if (!currentPlan && v === 'table') splash.style.display = 'flex';
+          if (!currentPlan) splash.style.display = 'flex';
           else splash.style.display = 'none';
         }
       }
@@ -1472,7 +1616,48 @@
       const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
       const fmt = (v) => (v !== "" && v !== null && v !== undefined) ? Number(v).toLocaleString() + " ฿" : "-";
 
-      return `<div class="preview-card ${isError ? 'error' : ''}"><div class="preview-header"><div><div style="font-size:10px; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">CATEGORY</div><span class="cat-badge">${e.catCode || '-'}</span></div><span class="status-tag ${statusClass}">${statusLabel}</span></div><div style="font-weight:700; font-size:15px; margin-bottom:10px; line-height:1.4;">${e.desc}</div><div class="meta-row"><div><label>ผู้เบิก:</label> <b>${e.name || '-'}</b></div><div><label>ฝ่าย:</label> <b>${e.dept || '-'}</b></div><div style="background:var(--primary-light); padding:5px; border-radius:5px;"><label>เงินกัน:</label> <b style="color:var(--primary-dark)">${fmt(e.amount)}</b></div><div style="background:#fff7ed; padding:5px; border-radius:5px;"><label>เงินตัดยอด/คืน:</label> <b style="color:#c2410c">${fmt(e.amountDeduct)}</b></div><div><label>เลขหนังสือ:</label> <b>${e.refNo || '-'}</b></div><div><label>เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div><div><label>ID:</label> <b>${e.id}</b></div></div>${isError ? `<div style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:12px; text-align:center;">${errorMsg}</div>` : ''}</div>`;
+      return `
+        <div class="preview-card ${isError ? 'error' : ''}">
+          <div class="preview-header">
+            <div>
+              <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">Category Sector</div>
+              <span class="cat-badge">${e.catCode || '-'}</span>
+            </div>
+            <span class="status-tag ${statusClass}">${statusLabel}</span>
+          </div>
+          
+          <div style="font-weight:800; font-size:18px; color:var(--text-main); margin: 16px 0 12px; line-height:1.4;">${e.desc}</div>
+          
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px; margin-top:20px;">
+            <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+              <label style="font-size:10px;">ผู้เบิก/ยืม</label>
+              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.name || '-'}</div>
+            </div>
+            <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+              <label style="font-size:10px;">หน่วยงาน/ฝ่าย</label>
+              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.dept || '-'}</div>
+            </div>
+            <div style="background:var(--primary-light); padding:12px; border-radius:12px; border:1px solid var(--primary);">
+              <label style="font-size:10px; color:var(--primary-dark)">งบประมาณกั้นไว้</label>
+              <div style="font-weight:800; font-size:16px; color:var(--primary-dark); margin-top:4px;">${fmt(e.amount)}</div>
+            </div>
+            <div style="background:#fff7ed; padding:12px; border-radius:12px; border:1px solid #fdba74;">
+              <label style="font-size:10px; color:#9a3412">ใช้จริง/คืนเงิน</label>
+              <div style="font-weight:800; font-size:16px; color:#9a3412; margin-top:4px;">${fmt(e.amountDeduct)}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #e2e8f0; display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:12px;">
+            <div><label style="font-size:9px;">เลขหนังสือ:</label> <b>${e.refNo || '-'}</b></div>
+            <div><label style="font-size:9px;">เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div>
+            <div><label style="font-size:9px;">เลขที่ระบบ:</label> <b>${e.colF || '-'}</b></div>
+            <div><label style="font-size:9px;">รหัส ID:</label> <b style="color:var(--primary)">#${e.id}</b></div>
+          </div>
+
+          ${isError ? `<div style="background:#fef2f2; color:#ef4444; padding:12px; border-radius:8px; font-size:12px; font-weight:800; margin-top:20px; border:1px solid #fecaca; text-align:center;">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle; margin-right:4px;">warning</span> ${errorMsg}
+          </div>` : ''}
+        </div>`;
     }
 
     function omniSearch(val, view) {
@@ -1558,7 +1743,15 @@
 
     function showSearchDetail(id) {
       const e = cache.entries.find(x => x.id == id);
-      document.getElementById('searchDetail').innerHTML = createPreviewHTML(e);
+      const detailContainer = document.getElementById('searchDetail');
+      detailContainer.innerHTML = createPreviewHTML(e) + `
+        <button class="submit-btn" style="margin-top:20px;" onclick="selectFromTable('${id}')">
+          <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+            <span class="material-symbols-outlined">settings</span>
+            ดำเนินการกับรายการนี้
+          </div>
+        </button>
+      `;
     }
 
     function loadEdit(id) {
@@ -1581,9 +1774,22 @@
 
     function renderTable(q = "") {
       const tbody = document.getElementById('tableBody');
-      if (!cache || !cache.entries) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>'; return; }
+      if (!cache || !cache.entries) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>'; return; }
 
       let filtered = cache.entries.filter(e => e.refNo && e.refNo.toString().trim() !== "");
+
+      // Status Toggle Filter (Column F)
+      const tsValue = document.querySelector('input[name="tableStatus"]:checked').value;
+      if (tsValue === 'pending') {
+        // Not yet liquidated (Amount Deduct is 0 or empty)
+        filtered = filtered.filter(e => !e.amountDeduct || e.amountDeduct == 0);
+      } else if (tsValue === 'liq-pending-gf') {
+        // Liquidated but not yet GF-ed (Has amount deduct, but colE is empty)
+        filtered = filtered.filter(e => (e.amountDeduct && e.amountDeduct != 0) && (!e.colE || e.colE.toString().trim() === ""));
+      } else {
+        // GF Success (colE is not empty)
+        filtered = filtered.filter(e => e.colE && e.colE.toString().trim() !== "");
+      }
 
       // Apply Filter Selects
       const fDept = document.getElementById('filterDept').value;
@@ -1618,7 +1824,18 @@
 
           <td class="amt-col" style="color:var(--primary-dark)">${Number(e.amount || 0).toLocaleString()}</td>
           <td class="amt-col" style="color:#c2410c">${Number(e.amountDeduct || 0).toLocaleString()}</td>
-          <td style="white-space:nowrap;">${e.colF || '-'}</td>
+          <td style="white-space:nowrap; text-align:center;">
+            ${e.colE ? `
+              <span class="status-tag status-success" style="font-size:9px; padding:2px 4px; border-radius:4px; display:inline-block; margin-bottom:4px;">GF สำเร็จ</span><br>
+              <div style="font-size:10px; font-weight:600; color:var(--text-main);">${e.colE}</div>
+              ${e.colF ? `<div style="font-size:9px; opacity:0.6; margin-top:2px;">(${e.colF})</div>` : ''}
+            ` : (e.amountDeduct && e.amountDeduct != 0 ? `
+              <span class="status-tag status-normal" style="font-size:9px; padding:2px 4px; border-radius:4px; display:inline-block; margin-bottom:4px;">ตัดยอดแล้ว</span><br>
+              <div style="font-size:10px; font-weight:600; color:var(--text-main);">${e.colF || '-'}</div>
+            ` : `
+              <span class="status-tag status-pending" style="font-size:9px; padding:2px 4px; border-radius:4px;">ยังไม่ตัดยอด</span>
+            `)}
+          </td>
         </tr>
       `).join('');
     }
@@ -1626,7 +1843,21 @@
     let selectedId = null;
     function selectFromTable(id) {
       selectedId = id;
+      const e = cache.entries.find(x => x.id == id);
       document.getElementById('actionIdDisplay').innerText = '#' + id;
+
+      const isLiquidated = e && e.colF && e.colF.toString().trim() !== "";
+
+      // Control Action Visibility
+      document.getElementById('btn-deduct').style.display = isLiquidated ? 'none' : 'flex';
+      document.getElementById('btn-offset').style.display = isLiquidated ? 'none' : 'flex';
+      document.getElementById('btn-cancel').style.display = isLiquidated ? 'none' : 'flex';
+      document.getElementById('btn-reserve-add').style.display = isLiquidated ? 'none' : 'flex';
+
+      // Always show Edit and Deduct Add (as requested)
+      document.getElementById('btn-edit').style.display = 'flex';
+      document.getElementById('btn-deduct-add').style.display = 'flex';
+
       document.getElementById('actionOverlay').style.display = 'flex';
     }
 
@@ -1645,6 +1876,16 @@
       closeActionMenu();
       const navId = 'nav-' + act;
       setView(act, document.getElementById(navId));
+
+      const titles = {
+        'deduct': 'ตัดยอดงบประมาณ',
+        'deduct-add': 'ตัดยอดเพิ่มเติม',
+        'offset': 'หักล้างเงินยืม',
+        'reserve-add': 'กันเงินเพิ่มเติม',
+        'cancel': 'ยกเลิกรายการกันเงิน',
+        'edit': 'แก้ไขข้อมูลรายการ'
+      };
+      if (titles[act]) document.getElementById('viewTitle').innerText = titles[act];
 
       let searchInputId = '';
       if (act === 'deduct') searchInputId = 'deductSearchId';
@@ -1687,12 +1928,14 @@
 
     window.onload = () => {
       const input = document.getElementById('apiInput');
-      input.value = API;
-      input.onchange = () => {
-        API = input.value;
-        localStorage.setItem('budgetApiUrl', API);
-        setStatus('ready', 'อัปเดต API แล้ว');
-      };
+      if (input) {
+        input.value = API;
+        input.onchange = () => {
+          API = input.value;
+          localStorage.setItem('budgetApiUrl', API);
+          setStatus('ready', 'อัปเดต API แล้ว');
+        };
+      }
       setStatus('ready', 'พร้อมเริ่มงาน');
     };
   </script>
