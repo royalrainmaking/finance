@@ -876,6 +876,10 @@
         <span class="material-symbols-outlined">add_circle</span>
         <span>กันเงินใหม่</span>
       </div>
+      <div class="nav-item" id="nav-reserve-deduct" onclick="setView('reserve-deduct', this)">
+        <span class="material-symbols-outlined">bolt</span>
+        <span>กันเงิน+ตัดยอด (ด่วน)</span>
+      </div>
       <div class="nav-item" id="nav-reserve-add" onclick="setView('reserve-add', this)">
         <span class="material-symbols-outlined">post_add</span>
         <span>กันเงินเพิ่มเติม</span>
@@ -1060,6 +1064,47 @@
               <!-- Rows injected here -->
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- RESERVE & DEDUCT -->
+      <div id="view-reserve-deduct" class="app-view">
+        <div class="form-wrapper">
+          <form id="reserveDeductForm">
+            <h2 style="margin-bottom:20px; color:var(--primary); display:flex; align-items:center; gap:10px;">
+              <span class="material-symbols-outlined">bolt</span>
+              กันเงินพร้อมตัดยอด (รายการด่วน)
+            </h2>
+            <div class="form-grid">
+              <div class="field"><label>เลขที่หนังสือ (กันเงิน)</label><input type="text" name="refNo"
+                  oninput="syncRDRef(this.value)" required></div>
+              <div class="field"><label>วันที่หนังสือ</label><input type="date" name="letterDate" required></div>
+              <div class="field"><label>เลขที่หนังสือ (ตัดยอด)</label><input type="text" name="liquidateRefNo"
+                  id="rdLiqRef" required></div>
+              <div class="field"><label>เลขที่ระบบตัดยอด</label><input type="text" name="colF"></div>
+              <div class="field" style="position:relative;">
+                <label>ชื่อผู้เบิก/ยืม</label>
+                <input type="text" name="name" oninput="showFloatingSuggestions(this, 'sugRDName', 'names')" required>
+                <div id="sugRDName" class="floating-suggestions"></div>
+              </div>
+              <div class="field"><label>ฝ่าย</label><select name="dept" id="rdDept" required></select></div>
+              <div class="field"><label>หมวดงบประมาณ</label>
+                <select name="cat" id="rdCat" onchange="syncCode(this)" data-hidden="catCodeRD" required></select>
+                <input type="hidden" name="catCode" id="catCodeRD">
+              </div>
+              <div class="field"><label>จำนวนเงิน (กัน+ตัด)</label><input type="number" step="0.01" name="amount"
+                  required></div>
+              <div class="field full" style="position:relative;">
+                <label>รายการ/คำอธิบาย</label>
+                <textarea name="desc" rows="2" oninput="showFloatingSuggestions(this, 'sugRDDesc', 'descs')"
+                  required></textarea>
+                <div id="sugRDDesc" class="floating-suggestions"></div>
+              </div>
+              <div class="field full"><label>หมายเหตุ (Column B)</label><input type="text" name="remark"></div>
+            </div>
+            <button type="submit" class="submit-btn" style="background:var(--primary);">บันทึกรายการด่วน
+              (กัน+ตัด)</button>
+          </form>
         </div>
       </div>
 
@@ -1383,7 +1428,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbwoj_idK7ymlDFdksrgBF6TpH775ygBAroLiuOs60vAQWtyD-8m7DRWIru03v5oOaMP/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbz2ReWPC_0XlgPRTXeQpMx6q3_VN2FsXenZ7KHXkYK4WJ0FDytBr8asdRVAhs5RJWlt/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -1499,7 +1544,7 @@
         updateDataLists(d.entries);
         document.getElementById('splash').classList.add('hidden');
         document.querySelectorAll('.submit-btn').forEach(b => b.disabled = false);
-        if (document.getElementById('view-table').classList.contains('active')) renderTable();
+        renderTable();
       }
     }
 
@@ -1517,9 +1562,26 @@
       const fCat = document.getElementById('filterCat');
       const fRem = document.getElementById('filterRemark');
 
+      const rdDept = document.getElementById('rdDept');
+      const rdCat = document.getElementById('rdCat');
+
       if (fDept) fDept.innerHTML = '<option value="">-- กรองตามฝ่าย --</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
       if (fCat) fCat.innerHTML = '<option value="">-- กรองตามหมวด --</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
       if (fRem) fRem.innerHTML = '<option value="">-- กรองตามหมายเหตุ (B) --</option>' + remarks.map(r => `<option value="${r}">${r}</option>`).join('');
+
+      // Update RD Dropdowns
+      if (rdDept) rdDept.innerHTML = '<option value="">-- เลือกฝ่าย --</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+      if (rdCat && window.planConfig && window.planConfig.categories) {
+        let html = '<option value="">-- เลือกหมวด --</option>';
+        window.planConfig.categories.forEach(group => {
+          html += `<optgroup label="${group.label}">`;
+          group.options.forEach(opt => {
+            html += `<option value="${opt.value}" data-code="${opt.code}">${opt.text || opt.label}</option>`;
+          });
+          html += `</optgroup>`;
+        });
+        rdCat.innerHTML = html;
+      }
     }
 
     function showFloatingSuggestions(input, sugId, type) {
@@ -1554,13 +1616,10 @@
     }
 
     function showHome() {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      document.getElementById('nav-home').classList.add('active');
-      document.querySelectorAll('.app-view').forEach(av => av.classList.remove('active'));
-      document.getElementById('splash').classList.remove('hidden');
-      document.getElementById('viewTitle').innerText = 'หน้าแรก / เลือกแผน';
-      document.querySelector('.plan-bar').style.display = 'none';
-      if (document.getElementById('backBtn')) document.getElementById('backBtn').style.display = 'none';
+      currentPlan = null;
+      cache = null;
+      renderTable(); // Show placeholder
+      setView('home', document.getElementById('nav-home'));
     }
 
     function setPlanFromSplash(plan) {
@@ -1569,12 +1628,15 @@
       const el = document.querySelector(`.plan-tab[data-plan="${plan}"]`);
       if (el) setPlan(el);
       setView('table', document.getElementById('nav-table'));
+      renderTable();
     }
 
     function setPlan(el) {
       document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
       currentPlan = el.dataset.plan;
+      cache = null; // Clear old cache to show loading state
+      renderTable(); // Show loading message
       updateTheme(currentPlan);
       updateCategoryDropdowns(currentPlan);
       init();
@@ -1582,6 +1644,7 @@
 
     function updateCategoryDropdowns(plan) {
       const cats = PLAN_CATEGORIES[plan] || PLAN_CATEGORIES['default'];
+      window.planConfig = { categories: cats }; // Set global config
       const selects = document.querySelectorAll('.catSelect');
       selects.forEach(select => {
         const currentVal = select.value;
@@ -1611,30 +1674,28 @@
       const t = document.getElementById('view-' + v);
       if (t) t.classList.add('active');
 
-      const titleSpan = el.querySelector('span:not(.material-symbols-outlined)');
-      if (titleSpan) document.getElementById('viewTitle').innerText = titleSpan.innerText;
-
-      // Handle Back Button Visibility
+      const planBar = document.querySelector('.plan-bar');
+      const splash = document.getElementById('splash');
       const backBtn = document.getElementById('backBtn');
-      if (v === 'home' || v === 'table' || v === 'dashboard') {
+
+      // Visibility Rules
+      if (v === 'home' || v === 'dashboard') {
+        if (planBar) planBar.style.display = 'none';
+        if (splash && v === 'home') splash.classList.remove('hidden');
         if (backBtn) backBtn.style.display = 'none';
       } else {
-        if (backBtn) backBtn.style.display = 'flex';
+        if (splash) splash.classList.add('hidden');
+        if (planBar && currentPlan) planBar.style.display = 'flex';
+        if (backBtn) backBtn.style.display = (v === 'table' ? 'none' : 'flex');
       }
 
-      const splash = document.getElementById('splash');
-      const planBar = document.querySelector('.plan-bar');
-
+      // Special case for GF
       if (v === 'gf') {
-        if (splash) splash.style.display = 'none';
         if (planBar) planBar.style.display = 'none';
-      } else {
-        if (planBar) planBar.style.display = 'flex';
-        if (splash) {
-          if (!currentPlan) splash.style.display = 'flex';
-          else splash.style.display = 'none';
-        }
       }
+
+      const titleSpan = el.querySelector('span:not(.material-symbols-outlined)');
+      if (titleSpan) document.getElementById('viewTitle').innerText = titleSpan.innerText;
     }
 
 
@@ -1800,6 +1861,11 @@
     function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
     function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
+    function syncRDRef(v) {
+      const target = document.getElementById('rdLiqRef');
+      if (target) target.value = v;
+    }
+
     function extractMissionInfo(desc) {
       if (!desc) return { mission: 'ทั่วไป', province: 'ส่วนกลาง' };
       const m = desc.match(/ภารกิจ\s*([^\s,()#-]+)/);
@@ -1812,7 +1878,14 @@
 
     function renderTable(q = "") {
       const tbody = document.getElementById('tableBody');
-      if (!cache || !cache.entries) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>'; return; }
+      if (!currentPlan) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>';
+        return;
+      }
+      if (!cache || !cache.entries) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px;"><div class="loader-inner" style="margin:20px auto;"></div>กำลังโหลดข้อมูล...</td></tr>';
+        return;
+      }
 
       let filtered = cache.entries.filter(e => e.refNo && e.refNo.toString().trim() !== "");
 
@@ -1921,7 +1994,7 @@
       const doGroup = document.getElementById('groupToggle').checked;
 
       if (doGroup) {
-        tbody.innerHTML = groups.map(g => {
+        tbody.innerHTML = groups.length > 0 ? groups.map(g => {
           const groupTotal = g.entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
           const groupHeader = `
             <tr class="group-header">
@@ -1942,9 +2015,9 @@
             </tr>
           `;
           return groupHeader + g.entries.map(rowTpl).join('');
-        }).join('');
+        }).join('') : '<tr><td colspan="10" style="text-align:center; padding:40px; color:var(--text-muted);">ไม่พบข้อมูลในเงื่อนไขที่เลือก หรือ คอลัมน์ G ยังไม่มีเลขหนังสือ</td></tr>';
       } else {
-        tbody.innerHTML = filtered.map(rowTpl).join('');
+        tbody.innerHTML = filtered.length > 0 ? filtered.map(rowTpl).join('') : '<tr><td colspan="10" style="text-align:center; padding:40px; color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
       }
     }
 
@@ -2036,6 +2109,7 @@
 
 
     document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdate', data); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย' + (data.id ? ' ID: ' + data.id : '')); init(); } };
+    document.getElementById('reserveDeductForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); data.col = data.cat; const r = await call('submitReserveAndDeduct', data); if (r?.success) { showModal('สำเร็จ', 'บันทึกรายการด่วนเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
 
     window.onload = () => {
       const input = document.getElementById('apiInput');

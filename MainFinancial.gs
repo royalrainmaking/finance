@@ -28,6 +28,7 @@ function doPost(e) {
     else if (action === 'submitDeductAdd') res = budget_submitDeductAdd(params.data, planKey);
     else if (action === 'submitUpdate') res = budget_submitUpdate(params.data, planKey);
     else if (action === 'submitCancel') res = budget_submitCancel(params.data, planKey);
+    else if (action === 'submitReserveAndDeduct') res = budget_submitReserveAndDeduct(params.data, planKey);
 
 
     return ContentService.createTextOutput(JSON.stringify(res || { error: 'Action not found' })).setMimeType(ContentService.MimeType.JSON);
@@ -45,7 +46,9 @@ function budget_getTargetSheet(planKey) {
 function budget_formatThaiDate(date) {
   if (!date || !(date instanceof Date) || isNaN(date)) return date;
   const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-  return `${date.getDate()} ${months[date.getMonth()]} ${(date.getFullYear() + 543).toString().slice(-2)}`;
+  let year = date.getFullYear();
+  if (year < 2400) year += 543;
+  return `${date.getDate()} ${months[date.getMonth()]} ${year.toString().slice(-2)}`;
 }
 
 function budget_applyFormulas(sheet, row) {
@@ -375,4 +378,35 @@ function budget_submitCancel(data, planKey) {
 
   budget_applyFormulas(sheet, target);
   return { success: true };
+}
+
+function budget_submitReserveAndDeduct(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const ids = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  let max = 0; ids.forEach(r => { let v = parseInt(r[0]); if(v > max) max = v; });
+  const nextId = max + 1;
+  const nr = lastRow + 1;
+  
+  sheet.getRange(nr, 1).setValue(nextId);
+  sheet.getRange(nr, 2).setValue(data.remark || "");
+  sheet.getRange(nr, 3).setValue(new Date()); 
+  sheet.getRange(nr, 4).setValue(data.liquidateRefNo || "");
+  sheet.getRange(nr, 6).setValue(data.colF || "");
+  sheet.getRange(nr, 7).setValue(data.refNo);
+  sheet.getRange(nr, 8).setValue(data.letterDate);
+  sheet.getRange(nr, 9).setValue(data.name);
+  sheet.getRange(nr, 10).setValue(data.dept);
+  sheet.getRange(nr, 11).setValue(data.catCode);
+  sheet.getRange(nr, 13).setValue(data.desc);
+  
+  if (data.col) {
+    const baseCol = parseInt(data.col);
+    const amt = parseFloat(data.amount);
+    sheet.getRange(nr, baseCol).setValue(amt);
+    sheet.getRange(nr, baseCol + 1).setValue(amt); // Same amount for deduction
+  }
+  
+  budget_applyFormulas(sheet, nr);
+  return { success: true, id: nextId };
 }
