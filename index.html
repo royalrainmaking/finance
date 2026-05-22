@@ -530,6 +530,10 @@
       z-index: 2000;
     }
 
+    #modalOverlay.active {
+      display: flex;
+    }
+
     .modal-card {
       width: 440px;
       background: white;
@@ -616,6 +620,14 @@
       font-size: 16px;
       font-weight: 800;
       border: 1px solid var(--primary);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
     .status-tag {
@@ -997,21 +1009,34 @@
           <input type="text" id="tableSearchInput"
             placeholder="ค้นหาจากทุกอย่างในตาราง (ID, เลขหนังสือ, ชื่อ, รายการ...)" oninput="renderTable(this.value)">
         </div>
+
         <div class="filter-bar">
-          <div class="type-pill" style="margin-bottom:0; flex:1; min-width:360px;">
+          <div class="type-pill" style="margin-bottom:0; flex:1; min-width:400px;">
+            <input type="radio" name="tableStatus" id="tsAll" value="all" onchange="renderTable()"><label
+              for="tsAll">ทั้งหมด</label>
             <input type="radio" name="tableStatus" id="tsPending" value="pending" checked
               onchange="renderTable()"><label for="tsPending">ยังไม่ตัดยอด</label>
             <input type="radio" name="tableStatus" id="tsLiqPendingGF" value="liq-pending-gf"
-              onchange="renderTable()"><label for="tsLiqPendingGF">ตัดยอดแล้ว/ยังไม่ GF</label>
+              onchange="renderTable()"><label for="tsLiqPendingGF">ตัดยอดแล้ว/รอ GF</label>
             <input type="radio" name="tableStatus" id="tsCompleted" value="completed" onchange="renderTable()"><label
               for="tsCompleted">GF สำเร็จแล้ว</label>
+            <input type="radio" name="tableStatus" id="tsCancelled" value="cancelled" onchange="renderTable()"><label
+              for="tsCancelled">รายการที่ยกเลิก</label>
           </div>
+          <select id="filterRemark" onchange="renderTable(document.getElementById('tableSearchInput').value)">
+            <option value="">-- กรองตามหมายเหตุ (B) --</option>
+          </select>
           <select id="filterDept" onchange="renderTable(document.getElementById('tableSearchInput').value)">
             <option value="">-- กรองตามฝ่าย --</option>
           </select>
           <select id="filterCat" onchange="renderTable(document.getElementById('tableSearchInput').value)">
             <option value="">-- กรองตามหมวด --</option>
           </select>
+          <label
+            style="font-size:12px; font-weight:700; color:var(--text-muted); display:flex; align-items:center; gap:8px; cursor:pointer; background:white; padding:8px 12px; border-radius:8px; border:1px solid var(--border);">
+            <input type="checkbox" id="groupToggle" checked onchange="renderTable()">
+            <span>จัดกลุ่มภารกิจ</span>
+          </label>
           <button class="plan-tab" style="padding:8px 15px; margin:0; height:auto; font-size:12px;"
             onclick="clearTableFilters()">ล้างฟิลเตอร์</button>
         </div>
@@ -1486,12 +1511,15 @@
       // Update Filter Dropdowns
       const depts = [...new Set(entries.map(e => e.dept))].filter(Boolean).sort();
       const cats = [...new Set(entries.map(e => e.catCode))].filter(Boolean).sort();
+      const remarks = [...new Set(entries.map(e => e.type))].filter(Boolean).sort();
 
       const fDept = document.getElementById('filterDept');
       const fCat = document.getElementById('filterCat');
+      const fRem = document.getElementById('filterRemark');
 
-      fDept.innerHTML = '<option value="">-- กรองตามฝ่าย --</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
-      fCat.innerHTML = '<option value="">-- กรองตามหมวด --</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (fDept) fDept.innerHTML = '<option value="">-- กรองตามฝ่าย --</option>' + depts.map(d => `<option value="${d}">${d}</option>`).join('');
+      if (fCat) fCat.innerHTML = '<option value="">-- กรองตามหมวด --</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (fRem) fRem.innerHTML = '<option value="">-- กรองตามหมายเหตุ (B) --</option>' + remarks.map(r => `<option value="${r}">${r}</option>`).join('');
     }
 
     function showFloatingSuggestions(input, sugId, type) {
@@ -1772,6 +1800,16 @@
     function showModal(title, text) { document.getElementById('mTitle').innerText = title; document.getElementById('mBody').innerText = text; document.getElementById('modalOverlay').classList.add('active'); }
     function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
 
+    function extractMissionInfo(desc) {
+      if (!desc) return { mission: 'ทั่วไป', province: 'ส่วนกลาง' };
+      const m = desc.match(/ภารกิจ\s*([^\s,()#-]+)/);
+      const p = desc.match(/(?:จังหวัด|จ\.)\s*([^\s,()#-]+)/);
+      return {
+        mission: m ? m[1].trim() : 'ทั่วไป',
+        province: p ? p[1].trim() : 'ส่วนกลาง'
+      };
+    }
+
     function renderTable(q = "") {
       const tbody = document.getElementById('tableBody');
       if (!cache || !cache.entries) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>'; return; }
@@ -1780,23 +1818,33 @@
 
       // Status Toggle Filter (Column F)
       const tsValue = document.querySelector('input[name="tableStatus"]:checked').value;
+
+      const isCancelled = (e) => e.colF && e.colF.toString().includes("ยกเลิก");
+
       if (tsValue === 'pending') {
-        // Not yet liquidated (Amount Deduct is 0 or empty)
-        filtered = filtered.filter(e => !e.amountDeduct || e.amountDeduct == 0);
+        // Pending: No deduction amount AND no GF completion AND no system ID AND NOT cancelled
+        filtered = filtered.filter(e =>
+          !isCancelled(e) &&
+          (!e.amountDeduct || e.amountDeduct == 0) &&
+          (!e.colE || e.colE.toString().trim() === "") &&
+          (!e.colF || e.colF.toString().trim() === "")
+        );
       } else if (tsValue === 'liq-pending-gf') {
-        // Liquidated but not yet GF-ed (Has amount deduct, but colE is empty)
-        filtered = filtered.filter(e => (e.amountDeduct && e.amountDeduct != 0) && (!e.colE || e.colE.toString().trim() === ""));
-      } else {
-        // GF Success (colE is not empty)
-        filtered = filtered.filter(e => e.colE && e.colE.toString().trim() !== "");
+        filtered = filtered.filter(e => !isCancelled(e) && (e.amountDeduct && e.amountDeduct != 0) && (!e.colE || e.colE.toString().trim() === ""));
+      } else if (tsValue === 'completed') {
+        filtered = filtered.filter(e => !isCancelled(e) && e.colE && e.colE.toString().trim() !== "");
+      } else if (tsValue === 'cancelled') {
+        filtered = filtered.filter(isCancelled);
       }
 
       // Apply Filter Selects
       const fDept = document.getElementById('filterDept').value;
       const fCat = document.getElementById('filterCat').value;
+      const fRem = document.getElementById('filterRemark').value;
 
       if (fDept) filtered = filtered.filter(e => e.dept === fDept);
       if (fCat) filtered = filtered.filter(e => e.catCode === fCat);
+      if (fRem) filtered = filtered.filter(e => e.type === fRem);
 
       if (q.trim()) {
         const query = q.trim().toLowerCase();
@@ -1812,7 +1860,39 @@
         );
       }
 
-      tbody.innerHTML = filtered.map(e => `
+      // --- Grouping Logic ---
+      const groups = [];
+      if (filtered.length > 0) {
+        // Sort by date (descending to show newest groups first)
+        filtered.sort((a, b) => {
+          const da = a.letterDateRaw ? new Date(a.letterDateRaw).getTime() : 0;
+          const db = b.letterDateRaw ? new Date(b.letterDateRaw).getTime() : 0;
+          if (da !== db) return db - da;
+          return b.id - a.id;
+        });
+
+        filtered.forEach(e => {
+          const { mission, province } = extractMissionInfo(e.desc);
+          const eDate = e.letterDateRaw ? new Date(e.letterDateRaw).getTime() : 0;
+
+          let targetGroup = groups.find(g => {
+            if (g.mission !== mission || g.province !== province) return false;
+            // Check if within 3 days of any entry in this group
+            return g.entries.some(ge => {
+              const geDate = ge.letterDateRaw ? new Date(ge.letterDateRaw).getTime() : 0;
+              return Math.abs(geDate - eDate) <= 3 * 24 * 60 * 60 * 1000;
+            });
+          });
+
+          if (targetGroup) {
+            targetGroup.entries.push(e);
+          } else {
+            groups.push({ mission, province, entries: [e] });
+          }
+        });
+      }
+
+      const rowTpl = (e) => `
         <tr onclick="selectFromTable('${e.id}')">
           <td class="id-col">#${e.id}</td>
           <td style="white-space:nowrap;">${e.date}</td>
@@ -1821,7 +1901,6 @@
           <td style="white-space:nowrap;"><b>${e.name}</b></td>
           <td>${e.dept}</td>
           <td style="min-width:180px; font-size:12px; line-height:1.4;">${e.desc}</td>
-
           <td class="amt-col" style="color:var(--primary-dark)">${Number(e.amount || 0).toLocaleString()}</td>
           <td class="amt-col" style="color:#c2410c">${Number(e.amountDeduct || 0).toLocaleString()}</td>
           <td style="white-space:nowrap; text-align:center;">
@@ -1837,7 +1916,36 @@
             `)}
           </td>
         </tr>
-      `).join('');
+      `;
+
+      const doGroup = document.getElementById('groupToggle').checked;
+
+      if (doGroup) {
+        tbody.innerHTML = groups.map(g => {
+          const groupTotal = g.entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+          const groupHeader = `
+            <tr class="group-header">
+              <td colspan="10" style="background:#f8fafc; border-bottom:1px solid var(--border); padding:12px 16px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:32px; height:32px; background:var(--primary-light); color:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">explore</span>
+                  </div>
+                  <div>
+                    <div style="font-weight:800; color:var(--text-main); font-size:13px;">ภารกิจ: ${g.mission} | จ.${g.province}</div>
+                    <div style="font-size:10px; color:var(--text-muted); font-weight:600;">รวมทั้งสิ้น ${g.entries.length} รายการ | ยอดงบประมาณกลุ่ม: ${groupTotal.toLocaleString()} ฿</div>
+                  </div>
+                  <div style="margin-left:auto;">
+                     <span class="status-tag" style="background:var(--primary); color:white; font-size:9px;">CLUSTER ACTIVE</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+          return groupHeader + g.entries.map(rowTpl).join('');
+        }).join('');
+      } else {
+        tbody.innerHTML = filtered.map(rowTpl).join('');
+      }
     }
 
     let selectedId = null;
@@ -1864,6 +1972,9 @@
     function clearTableFilters() {
       document.getElementById('filterDept').value = "";
       document.getElementById('filterCat').value = "";
+      document.getElementById('filterRemark').value = "";
+      document.getElementById('groupToggle').checked = true;
+      document.getElementById('tsPending').checked = true;
       document.getElementById('tableSearchInput').value = "";
       renderTable();
     }
@@ -1918,13 +2029,13 @@
 
     document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
     document.getElementById('reserveAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserveAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการกันเงินเพิ่มเรียบร้อย ID: ' + r.id); init(); e.target.reset(); document.getElementById('reserveAddFields').style.display = 'none'; document.getElementById('prvRA').style.display = 'none'; } };
-    document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย'); init(); } };
+    document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย' + (r.id ? ' ID: ' + r.id : '')); init(); } };
     document.getElementById('deductAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeductAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการตัดยอดเพิ่มเรียบร้อย ID: ' + r.id); init(); } };
-    document.getElementById('cancelForm').onsubmit = async (e) => { e.preventDefault(); if (!confirm('ยืนยันระบบการยกเลิกกันเงิน?')) return; const r = await call('submitCancel', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ยกเลิกรายการกันเงินเรียบร้อยแล้ว'); init(); } };
+    document.getElementById('cancelForm').onsubmit = async (e) => { e.preventDefault(); if (!confirm('ยืนยันระบบการยกเลิกกันเงิน?')) return; const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitCancel', data); if (r?.success) { showModal('สำเร็จ', 'ยกเลิกรายการกันเงินเรียบร้อยแล้ว' + (data.id ? ' ID: ' + data.id : '')); init(); } };
     document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); init(); } };
 
 
-    document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitUpdate', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย'); init(); } };
+    document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdate', data); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย' + (data.id ? ' ID: ' + data.id : '')); init(); } };
 
     window.onload = () => {
       const input = document.getElementById('apiInput');
