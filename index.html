@@ -268,8 +268,17 @@
     .app-view {
       display: none;
       width: 100%;
+      height: 100%;
+      /* Take full height of container */
+      overflow-y: auto;
+      /* Enable scrolling */
       margin: 0;
       animation: fadeUp 0.4s ease;
+    }
+
+    .app-view.active {
+      display: flex;
+      flex-direction: column;
     }
 
     @keyframes fadeUp {
@@ -1512,7 +1521,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbz2ReWPC_0XlgPRTXeQpMx6q3_VN2FsXenZ7KHXkYK4WJ0FDytBr8asdRVAhs5RJWlt/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbz6LDkVDgaNQiI7uV0mDlsGIY2x2eimo-DxQmdU-6XyiiWbaYeII5a9ZDDJIsLAZkLx/exec';
     let currentPlan = null;
     let cache = null;
 
@@ -1724,6 +1733,9 @@
       updateTheme(currentPlan);
       updateCategoryDropdowns(currentPlan);
       init();
+
+      // Auto-jump to table view
+      setView('table', document.getElementById('nav-table'));
     }
 
     function updateCategoryDropdowns(plan) {
@@ -1813,30 +1825,31 @@
 
 
     function createPreviewHTML(e, isError = false, errorMsg = "") {
-      const statusClass = e.type === 'PO' ? 'status-po' : 'status-normal';
-      const statusLabel = e.type === 'PO' ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
-      const fmt = (v) => (v !== "" && v !== null && v !== undefined) ? Number(v).toLocaleString() + " ฿" : "-";
+      const isPO = e.type && e.type.toString().toUpperCase() === 'PO';
+      const statusClass = isPO ? 'status-po' : 'status-normal';
+      const statusLabel = isPO ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
+      const fmt = (v) => (v !== "" && v !== null && v !== undefined && v !== 0) ? Number(v).toLocaleString() + " ฿" : "";
 
       return `
         <div class="preview-card ${isError ? 'error' : ''}">
           <div class="preview-header">
             <div>
               <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">Category Sector</div>
-              <span class="cat-badge">${e.catCode || '-'}</span>
+              <span class="cat-badge">${e.catCode || ''}</span>
             </div>
             <span class="status-tag ${statusClass}">${statusLabel}</span>
           </div>
           
-          <div style="font-weight:800; font-size:18px; color:var(--text-main); margin: 16px 0 12px; line-height:1.4;">${e.desc}</div>
+          <div style="font-weight:800; font-size:18px; color:var(--text-main); margin: 16px 0 12px; line-height:1.4;">${e.desc || ''}</div>
           
           <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px; margin-top:20px;">
             <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
               <label style="font-size:10px;">ผู้เบิก/ยืม</label>
-              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.name || '-'}</div>
+              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.name || ''}</div>
             </div>
             <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
               <label style="font-size:10px;">หน่วยงาน/ฝ่าย</label>
-              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.dept || '-'}</div>
+              <div style="font-weight:700; font-size:14px; margin-top:4px;">${e.dept || ''}</div>
             </div>
             <div style="background:var(--primary-light); padding:12px; border-radius:12px; border:1px solid var(--primary);">
               <label style="font-size:10px; color:var(--primary-dark)">งบประมาณกั้นไว้</label>
@@ -1849,9 +1862,9 @@
           </div>
 
           <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #e2e8f0; display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:12px;">
-            <div><label style="font-size:9px;">เลขหนังสือ:</label> <b>${e.refNo || '-'}</b></div>
-            <div><label style="font-size:9px;">เลขตัดยอด:</label> <b>${e.liquidateRefNo || '-'}</b></div>
-            <div><label style="font-size:9px;">เลขที่ระบบ:</label> <b>${e.colF || '-'}</b></div>
+            <div><label style="font-size:9px;">เลขหนังสือ:</label> <b>${e.refNo || ''}</b></div>
+            <div><label style="font-size:9px;">เลขตัดยอด:</label> <b>${e.liquidateRefNo || ''}</b></div>
+            <div><label style="font-size:9px;">เลขที่ระบบ:</label> <b>${e.colF || ''}</b></div>
             <div><label style="font-size:9px;">รหัส ID:</label> <b style="color:var(--primary)">#${e.id}</b></div>
           </div>
 
@@ -1904,9 +1917,10 @@
       if (view === 'D' || view === 'O' || view === 'DA' || view === 'C') {
         const modeEl = document.querySelector('input[name="mode"]:checked');
         const mode = modeEl ? modeEl.value : 'Normal';
+        const isPO = e.type && e.type.toString().toUpperCase() === 'PO';
         if (view === 'D') {
-          if (mode === 'PO' && e.type !== 'PO') err = "⚠️ รายการนี้ไม่ใช่ PO";
-          if (mode === 'Normal' && e.type === 'PO') err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
+          if (mode === 'PO' && !isPO) err = "⚠️ รายการนี้ไม่ใช่ PO";
+          if (mode === 'Normal' && isPO) err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
         }
         if (e.liquidateRefNo === '2025-10-28T17:00:00.000Z' || e.liquidateRefNo === '69-05-00033') err = "⚠️ รายการนี้ถูกตัดยอดแล้ว (Locked: 69-05-00033)";
       }
@@ -1979,28 +1993,30 @@
     }
 
     function extractMissionInfo(desc) {
-      if (!desc) return { mission: 'ทั่วไป', province: 'ส่วนกลาง', timestamp: 0 };
+      // Handle non-string or empty input safely
+      const d = (desc || "").toString().trim();
+      if (!d) return { mission: 'ทั่วไป', province: 'ส่วนกลาง', timestamp: 0 };
 
-      // 1. Mission Detection (Priority: "ภารกิจ", then "เพื่อ", then common keywords)
+      // 1. Mission Detection
       let mission = 'ทั่วไป';
-      const mMatch = desc.match(/(?:ภารกิจ|เพื่อ)\s*([^\s,()#-]{3,})/);
+      const mMatch = d.match(/(?:ภารกิจ|เพื่อ)\s*([^\s,()#-]{3,})/);
       if (mMatch) {
         mission = mMatch[1].trim();
       }
 
       // Normalize common missions
-      if (desc.includes('ภัยแล้ง')) mission = 'บรรเทาภัยแล้ง';
-      if (desc.includes('ฝนหลวง')) mission = 'ปฏิบัติการฝนหลวง';
-      if (desc.includes('ยาเสพติด')) mission = 'ปราบปรามยาเสพติด';
+      if (d.includes('ภัยแล้ง')) mission = 'บรรเทาภัยแล้ง';
+      if (d.includes('ฝนหลวง')) mission = 'ปฏิบัติการฝนหลวง';
+      if (d.includes('ยาเสพติด')) mission = 'ปราบปรามยาเสพติด';
 
       // 2. Province Detection (Take the FIRST one found)
-      const p = desc.match(/(?:จังหวัด|จ\.)\s*([^\s,()#-]+)/);
+      const p = d.match(/(?:จังหวัด|จ\.)\s*([^\s,()#-]+)/);
       const province = p ? p[1].trim() : 'ส่วนกลาง';
 
       // 3. Date Detection (e.g. "14 พ.ค. 69" or "ว.14พ.ค. 69")
       let timestamp = 0;
       const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-      const dateMatch = desc.match(/(\d{1,2})\s*(?:-|ถึง)?\s*(\d{1,2})?\s*([ก-ฮ]{2,4}\.?\w*)\s*(\d{2,4})/);
+      const dateMatch = d.match(/(\d{1,2})\s*(?:-|ถึง)?\s*(\d{1,2})?\s*([ก-ฮ]{2,4}\.?\w*)\s*(\d{2,4})/);
 
       if (dateMatch) {
         const day = parseInt(dateMatch[2] || dateMatch[1]);
@@ -2027,7 +2043,10 @@
         return;
       }
 
-      let filtered = cache.entries.filter(e => e.refNo && e.refNo.toString().trim() !== "");
+      let filtered = cache.entries.filter(e =>
+        e.id !== undefined && e.id !== null && e.id !== "" &&
+        e.date !== undefined && e.date !== null && e.date !== ""
+      );
 
       // Status Toggle Filter (Column F)
       const tsValue = document.querySelector('input[name="tableStatus"]:checked').value;
@@ -2122,7 +2141,10 @@
           <td onclick="selectFromTable('${e.id}')">${e.refNo}</td>
           <td onclick="selectFromTable('${e.id}')"><b>${e.name}</b></td>
           <td onclick="selectFromTable('${e.id}')">${e.dept}</td>
-          <td style="min-width:350px;" onclick="selectFromTable('${e.id}')">${e.desc}</td>
+          <td style="min-width:350px;" onclick="selectFromTable('${e.id}')">
+            ${(e.type && e.type.toString().toUpperCase() === 'PO') ? '<span class="status-tag status-po" style="font-size:9px; padding:1px 4px; margin-right:4px;">PO</span>' : ''}
+            ${e.desc}
+          </td>
           <td class="amt-col" style="color:var(--primary-dark)" onclick="selectFromTable('${e.id}')">${Number(e.amount || 0).toLocaleString()}</td>
           <td class="amt-col" style="color:#c2410c" onclick="selectFromTable('${e.id}')">${Number(e.amountDeduct || 0).toLocaleString()}</td>
           <td style="white-space:nowrap; text-align:center;" onclick="selectFromTable('${e.id}')">

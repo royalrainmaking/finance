@@ -74,16 +74,15 @@ function budget_getInitialData(planKey) {
   if (lastRow < 5) return { entries: [], todayThai: budget_formatThaiDate(new Date()) };
   const headers = sheet.getRange(2, 1, 2, lastCol).getValues();
   const data = sheet.getRange(5, 1, lastRow - 4, lastCol).getValues();
+  let lastParentInfo = {};
   const entries = data.filter(r => r[0]).map(row => {
     let catCode = "", catName = "", reserveAmount = 0, deductAmount = 0, col = 0;
     for (let c = 13; c < lastCol; c += 3) {
       if (headers[0][c]) {
         const v1 = row[c];
         const v2 = row[c+1];
-        // Check if value exists and is a valid number (or numeric string)
         const hasV1 = (v1 !== "" && v1 !== null && !isNaN(parseFloat(v1)));
         const hasV2 = (v2 !== "" && v2 !== null && !isNaN(parseFloat(v2)));
-        
         if (hasV1 || hasV2) {
           catCode = headers[0][c] || "-";
           catName = headers[1][c] || "";
@@ -94,15 +93,39 @@ function budget_getInitialData(planKey) {
         }
       }
     }
+    
     let liqRef = row[3];
     if (liqRef instanceof Date && liqRef.toISOString() === '2025-10-28T17:00:00.000Z') liqRef = '69-05-00033';
     else if (liqRef === '2025-10-28T17:00:00.000Z') liqRef = '69-05-00033';
 
+    const id = row[0].toString();
+    const isSub = id.includes(".");
+    
+    // Core data
+    let name = row[8];
+    let dept = row[9];
+    let desc = row[12];
+    let cat = row[10] || catCode;
+    let type = (row[1] || "").toString().trim();
+
+    // Inheritance logic: If sub-item is missing core info, pull from last parent
+    if (!isSub) {
+      lastParentInfo = { name, dept, desc, cat, type };
+    } else {
+      if (!name) name = lastParentInfo.name;
+      if (!dept) dept = lastParentInfo.dept;
+      if (!desc) desc = lastParentInfo.desc;
+      if (!cat) cat = lastParentInfo.cat;
+      if (!type) type = lastParentInfo.type;
+    }
+
     return { 
-      id: row[0], type: row[1], date: budget_formatThaiDate(row[2]), 
+      id: id, 
+      type: type,
+      date: budget_formatThaiDate(row[2]), 
       letterDateRaw: row[7], letterDateFormatted: budget_formatThaiDate(row[7]), 
-      refNo: row[6], name: row[8], dept: row[9], desc: row[12], 
-      catCode: row[10] || catCode, catName, amount: reserveAmount, amountDeduct: deductAmount, 
+      refNo: row[6], name: name, dept: dept, desc: desc, 
+      catCode: cat, catName, amount: reserveAmount, amountDeduct: deductAmount, 
       col, 
       colF: budget_formatThaiDate(row[5]), 
       colE: budget_formatThaiDate(row[4]), 
