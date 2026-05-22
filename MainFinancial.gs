@@ -157,7 +157,8 @@ function budget_submitDeduct(data, planKey) {
     sheet.getRange(nr, 2).setValue("PO");
     if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
     sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
-    [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+    [3, 7, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+    sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
     sheet.getRange(nr, 3).setValue(new Date()); 
     if (data.name) sheet.getRange(nr, 9).setValue(data.name);
     const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -181,6 +182,7 @@ function budget_submitDeduct(data, planKey) {
     if (data.colF) sheet.getRange(target, 6).setValue(data.colF);
     sheet.getRange(target, 3).setValue(new Date()); 
     sheet.getRange(target, 4).setValue(data.liquidateRefNo);
+    sheet.getRange(target, 8).setValue(data.liquidateLetterDate); // Update date in Column H
     const rowVals = sheet.getRange(target, 1, 1, sheet.getLastColumn()).getValues()[0];
     for (let c = 13; c < rowVals.length; c++) {
       if (sheet.getRange(2, c+1).getValue() && rowVals[c] !== "" && typeof rowVals[c] === 'number') {
@@ -220,7 +222,8 @@ function budget_submitOffset(data, planKey) {
   sheet.getRange(nr, 2).setValue("หักล้างเงินยืม");
   if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
   sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
-  [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  [3, 7, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
   sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -317,7 +320,8 @@ function budget_submitDeductAdd(data, planKey) {
   sheet.getRange(nr, 2).setValue("ตัดยอดเพิ่ม");
   if (data.colF) sheet.getRange(nr, 6).setValue(data.colF);
   sheet.getRange(nr, 4).setValue(data.liquidateRefNo);
-  [3, 7, 8, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  [3, 7, 9, 10, 11, 12, 13].forEach(c => sheet.getRange(nr, c).setValue(sheet.getRange(pIdx, c).getValue()));
+  sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
   sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];

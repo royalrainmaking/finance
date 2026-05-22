@@ -1078,6 +1078,8 @@
               </div>
               <div class="field"><label>เลขที่หนังสือตัดยอด (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
+              <div class="field"><label>วันที่หนังสือ (H)</label><input type="date" name="liquidateLetterDate" required>
+              </div>
               <div class="field"><label>เลขที่ระบบตัดยอด (F)</label><input type="text" name="colF"></div>
               <div class="field full"><label>จำนวนเงินใช้จริง (บาท)</label><input type="number" name="amount"
                   step="0.01" required></div>
@@ -1103,6 +1105,8 @@
               </div>
               <div class="field"><label>เลขที่หนังสือตัดยอดเพิ่ม (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
+              <div class="field"><label>วันที่หนังสือ (H)</label><input type="date" name="liquidateLetterDate" required>
+              </div>
               <div class="field"><label>เลขที่ระบบตัดยอด (F)</label><input type="text" name="colF"></div>
               <div class="field full"><label>จำนวนเงินตัดเพิ่ม (บาท)</label><input type="number" name="amount"
                   step="0.01" required></div>
@@ -1128,6 +1132,8 @@
               </div>
               <div class="field"><label>เลขที่หนังสือหักล้าง (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
+              <div class="field"><label>วันที่หนังสือ (H)</label><input type="date" name="liquidateLetterDate" required>
+              </div>
               <div class="field"><label>เลขที่ระบบตัดยอด (F)</label><input type="text" name="colF"></div>
               <div class="field full"><label>จำนวนเงินที่คืน (บาท)</label><input type="number" name="amount" step="0.01"
                   required></div>
@@ -1252,7 +1258,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbw5MiQQ0ILeqHgiX4LprEquFrqhDYdKLT31zHFfKoZhAfjSo3vZVizFW685WRg7IY7Z/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbzsmqMa2cRGMcHIXxAYRBZ3bzzBNzXt2h6c4AXJf4JRW50pnQwQwGYRkT4QZK6NWnZB/exec';
     let currentPlan = null;
     let cache = null;
 
