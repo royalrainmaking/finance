@@ -11,7 +11,8 @@ function doGet(e) {
     const action = e.parameter.action;
     const planKey = e.parameter.planKey || '1.ฝนหลวง'; 
     if (action === 'getInitialData') return ContentService.createTextOutput(JSON.stringify(budget_getInitialData(planKey))).setMimeType(ContentService.MimeType.JSON);
-    return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid' })).setMimeType(ContentService.MimeType.JSON);
+    if (action === 'getBuranakanData') return ContentService.createTextOutput(JSON.stringify(budget_getBuranakanData(planKey))).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid Action' })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) { return ContentService.createTextOutput(JSON.stringify({ error: err.message })).setMimeType(ContentService.MimeType.JSON); }
 }
 
@@ -41,6 +42,58 @@ function budget_getTargetSheet(planKey) {
   const sheet = ss.getSheetByName(config.sheet);
   if (!sheet) throw new Error("ไม่พบชีทชื่อ '" + config.sheet + "' ในระบบแผน " + planKey);
   return sheet; 
+}
+
+function budget_getBuranakanData(planKey) {
+  let targetGid = 783233359; // Default
+  if (planKey === '1.ฝนหลวง') targetGid = 783233359;
+  if (planKey === '2.ด้านการบิน' || planKey === '2.1 บินสาธาฯ') targetGid = 2072042102;
+  if (planKey === '3.แก้ปัญหาฝุ่น') targetGid = 577836523;
+  if (planKey === '4.บรรเทาลูกเห็บ') targetGid = 783233359;
+  let targetSheet = null;
+
+  // Get the specific spreadsheet ID for the requested plan
+  const planConfig = PLAN_CONFIG[planKey] || PLAN_CONFIG['1.ฝนหลวง'];
+  
+  try {
+    const ss = SpreadsheetApp.openById(planConfig.id);
+    const sheets = ss.getSheets();
+    for (const sheet of sheets) {
+      if (sheet.getSheetId() === targetGid) {
+        targetSheet = sheet;
+        break;
+      }
+    }
+  } catch (e) {
+    // Ignore error
+  }
+
+  if (!targetSheet) {
+    return { error: 'ไม่พบชีทที่มี gid=' + targetGid + ' ในไฟล์ที่เชื่อมต่ออยู่' };
+  }
+
+  const parseSheetNum = (val) => {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const clean = String(val).replace(/,/g, '').trim();
+    const num = Number(clean);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const rowNum = (planKey === '2.1 บินสาธาฯ') ? 51 : 16;
+  const gVal = parseSheetNum(targetSheet.getRange('G' + rowNum).getValue());
+  const nVal = parseSheetNum(targetSheet.getRange('N' + rowNum).getValue());
+  const lVal = parseSheetNum(targetSheet.getRange('L' + rowNum).getValue());
+  
+  return {
+    success: true,
+    data: {
+      budgetAfterAdjust: gVal,
+      gfTotal: nVal,
+      contractRemaining: lVal,
+      budgetRemaining: gVal - nVal - lVal
+    }
+  };
 }
 
 function budget_formatThaiDate(date) {

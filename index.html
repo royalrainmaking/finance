@@ -134,6 +134,119 @@
       overflow: hidden;
     }
 
+    @media print {
+      @page {
+        size: landscape;
+        margin: 10mm;
+      }
+
+      body {
+        background: white !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .sidebar,
+      .top-bar,
+      .hide-on-print,
+      .nav-menu {
+        display: none !important;
+      }
+
+      .app-container,
+      .main-content {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .table-wrapper {
+        max-height: none !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      .data-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: auto !important;
+      }
+
+      .data-table th,
+      .data-table td {
+        border: 1px solid #ccc !important;
+        padding: 6px 8px !important;
+        color: black !important;
+        font-size: 13px !important;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+      }
+
+      .data-table th {
+        background-color: #f1f5f9 !important;
+        font-weight: bold !important;
+      }
+
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #333;
+      }
+
+      .print-header h2 {
+        font-size: 20px !important;
+        margin: 0 0 5px 0 !important;
+      }
+
+      .print-header h3 {
+        font-size: 16px !important;
+        margin: 0 !important;
+        color: #555 !important;
+      }
+
+      .app-view {
+        padding: 0 !important;
+        display: block !important;
+      }
+
+      .excluded-row {
+        display: none !important;
+      }
+
+      tr[id^="sub-"] {
+        display: none !important;
+      }
+
+      #buranakanCards {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+      }
+
+      #buranakanCards .stat-card {
+        flex: 1 !important;
+        min-width: 0 !important;
+        padding: 12px !important;
+      }
+
+      .stat-card .stat-value {
+        font-size: 16px !important;
+      }
+
+      .stat-card .stat-title {
+        font-size: 10px !important;
+      }
+    }
+
     .top-bar {
       padding: 8px 24px;
       min-height: 50px;
@@ -588,6 +701,44 @@
       display: flex;
     }
 
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-secondary {
+      background: #f8fafc;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+    }
+
     .modal-card {
       width: 440px;
       background: white;
@@ -765,6 +916,25 @@
       margin: 0 auto 24px;
     }
 
+    .stat-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-title {
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
     #searchDetail {
       margin-top: 32px;
     }
@@ -940,6 +1110,10 @@
       <div class="nav-item" id="nav-table" onclick="setView('table', this); renderTable()">
         <span class="material-symbols-outlined">grid_on</span>
         <span>ตารางรายการทั้งหมด</span>
+      </div>
+      <div class="nav-item" id="nav-spending-plan" onclick="setView('spending-plan', this); renderSpendingPlan()">
+        <span class="material-symbols-outlined">pie_chart</span>
+        <span>แผนการใช้จ่าย</span>
       </div>
 
       <div class="nav-category">การจัดการงบประมาณ</div>
@@ -1132,6 +1306,98 @@
           </div> <!-- end plan-options -->
         </div> <!-- end plan-selector-card -->
       </div> <!-- end splash -->
+
+      <!-- SPENDING PLAN -->
+      <div id="view-spending-plan" class="app-view">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"
+          class="hide-on-print">
+          <h2 style="margin:0; font-size:20px; color:var(--primary-dark);">สรุปแผนการใช้จ่าย</h2>
+          <button class="btn btn-secondary" onclick="window.print()" style="display:flex; align-items:center; gap:6px;">
+            <span class="material-symbols-outlined" style="font-size:18px;">print</span>
+            พิมพ์รายงาน
+          </button>
+        </div>
+        <div class="print-header" style="display:none; text-align:center; margin-bottom:20px;">
+          <h2 style="margin:0 0 8px 0; font-size:24px; color:#000;">สรุปแผนการใช้จ่าย</h2>
+          <h3 id="spendingPlanPrintSubtitle" style="margin:0; font-size:18px; color:#333; font-weight:normal;"></h3>
+        </div>
+
+        <!-- BURANAKAN SUMMARY IN SPENDING PLAN -->
+        <div id="buranakanContainer"
+          style="margin-bottom:24px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"
+            class="hide-on-print">
+            <div>
+              <h3
+                style="margin:0; font-size:18px; color:var(--primary-dark); display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined" style="color:var(--primary); font-size:20px;">donut_large</span>
+                สรุปงบประมาณแผนบูรณาการ
+              </h3>
+            </div>
+            <button class="btn btn-secondary" onclick="fetchBuranakanData()"
+              style="padding:6px 12px; font-size:12px; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-outlined" style="font-size:14px;">refresh</span>
+              โหลดใหม่
+            </button>
+          </div>
+
+          <div id="buranakanLoader" style="display:none; text-align:center; padding:20px;">
+            <div class="loader-inner" style="margin:10px auto; width:30px; height:30px; border-width:3px;"></div>
+            <p style="font-size:13px; color:var(--text-muted);">กำลังเชื่อมต่อข้อมูล...</p>
+          </div>
+          <div id="buranakanError"
+            style="display:none; background:#fee2e2; border:1px solid #f87171; border-radius:8px; padding:12px; margin-bottom:10px; color:#991b1b; font-size:13px;">
+          </div>
+
+          <div id="buranakanCards"
+            style="display:none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+            <div class="stat-card" style="padding:16px; border-left: 4px solid var(--primary); min-width: 0;">
+              <div class="stat-title" style="font-size:12px; white-space: normal;">งบดำเนินงาน (คอลัมน์ G)</div>
+              <div class="stat-value" id="bk-g9" style="font-size:18px; word-break: break-word;">0.00</div>
+            </div>
+            <div class="stat-card" style="padding:16px; border-left: 4px solid #f59e0b; min-width: 0;">
+              <div class="stat-title" style="font-size:12px; white-space: normal;">GF รวมทั้งหมด (คอลัมน์ N)</div>
+              <div class="stat-value" id="bk-n9" style="color:#b45309; font-size:18px; word-break: break-word;">0.00
+              </div>
+            </div>
+            <div class="stat-card" style="padding:16px; border-left: 4px solid #8b5cf6; min-width: 0;">
+              <div class="stat-title" style="font-size:12px; white-space: normal;">สัญญาคงเหลือ (คอลัมน์ L)</div>
+              <div class="stat-value" id="bk-l9" style="color:#5b21b6; font-size:18px; word-break: break-word;">0.00
+              </div>
+            </div>
+            <div class="stat-card"
+              style="padding:16px; border-left: 4px solid #10b981; background:linear-gradient(to bottom right, #f0fdf4, #ffffff); min-width: 0;">
+              <div class="stat-title" style="font-size:12px; white-space: normal;">งบประมาณคงเหลือ (G - N - L)</div>
+              <div class="stat-value" id="bk-remain" style="color:#065f46; font-size:20px; word-break: break-word;">0.00
+              </div>
+            </div>
+            <div class="stat-card"
+              style="padding:16px; border-left: 4px solid #e11d48; background:linear-gradient(to bottom right, #fff1f2, #ffffff); min-width: 0;">
+              <div class="stat-title" style="font-size:12px; color:#be123c; white-space: normal;">คงเหลือหลังหักแผน
+                (Net)</div>
+              <div class="stat-value" id="bk-final-remain"
+                style="color:#be123c; font-size:20px; word-break: break-word;">0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+          <table class="data-table" style="table-layout: fixed; width: 100%;">
+            <thead>
+              <tr>
+                <th style="width:5%; text-align:center;" class="hide-on-print">เลือก</th>
+                <th style="width:35%;">หมวดงบประมาณ</th>
+                <th style="width:20%; text-align:right;">รวมยังไม่ตัดยอด (฿)</th>
+                <th style="width:20%; text-align:right;">รวมตัดยอด รอ GF (฿)</th>
+                <th style="width:20%; text-align:right;">รวมแผนการใช้จ่าย (฿)</th>
+              </tr>
+            </thead>
+            <tbody id="spendingPlanBody">
+              <!-- Rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- ALL DATA TABLE -->
       <div id="view-table" class="app-view">
@@ -1521,9 +1787,11 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbz6LDkVDgaNQiI7uV0mDlsGIY2x2eimo-DxQmdU-6XyiiWbaYeII5a9ZDDJIsLAZkLx/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxm2baedI9tj1TogII9OKuKt9cpDUQSUSrKclXg19YN5AOdntDPpCZCiagArlJ79i5X/exec';
     let currentPlan = null;
     let cache = null;
+    let excludedSpendingItems = new Set();
+    let expandedSpendingCategories = new Set();
 
     const themeColors = {
       '1.ฝนหลวง': { p: '#10b981', l: '#d1fae5', d: '#065f46' },
@@ -2032,6 +2300,246 @@
       return { mission, province, timestamp };
     }
 
+    function toggleSpendingItem(id, event) {
+      if (event) event.stopPropagation();
+      if (excludedSpendingItems.has(id)) {
+        excludedSpendingItems.delete(id);
+      } else {
+        excludedSpendingItems.add(id);
+      }
+      renderSpendingPlan();
+    }
+
+    function toggleSpendingCategory(catCode, event) {
+      if (event) event.stopPropagation();
+      if (!cache || !cache.entries) return;
+
+      const isCancelled = (e) => e.colF && e.colF.toString().includes("ยกเลิก");
+      const items = cache.entries.filter(e =>
+        e.id !== undefined && e.id !== null && e.id !== "" &&
+        e.date !== undefined && e.date !== null && e.date !== "" &&
+        !isCancelled(e) &&
+        (e.catCode || 'ไม่ระบุหมวด') === catCode
+      );
+
+      let allExcluded = true;
+      let validItemsCount = 0;
+      items.forEach(e => {
+        const deduct = Number(e.amountDeduct || 0);
+        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "");
+        const isPendingGF = (deduct && deduct !== 0) && (!e.colE || e.colE.toString().trim() === "");
+        if (isPending || isPendingGF) {
+          validItemsCount++;
+          if (!excludedSpendingItems.has(e.id)) {
+            allExcluded = false;
+          }
+        }
+      });
+
+      if (validItemsCount === 0) return;
+
+      if (allExcluded) {
+        items.forEach(e => excludedSpendingItems.delete(e.id));
+      } else {
+        items.forEach(e => excludedSpendingItems.add(e.id));
+      }
+
+      renderSpendingPlan();
+    }
+
+    function renderSpendingPlan() {
+      fetchBuranakanData();
+      const tbody = document.getElementById('spendingPlanBody');
+      const subtitle = document.getElementById('spendingPlanPrintSubtitle');
+      if (subtitle) subtitle.innerHTML = 'แผนปฏิบัติการ: ' + (currentPlan || '');
+
+      if (!currentPlan) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">กรุณาเลือกแผนปฏิบัติการก่อน</td></tr>';
+        return;
+      }
+      if (!cache || !cache.entries) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;"><div class="loader-inner" style="margin:20px auto;"></div>กำลังโหลดข้อมูล...</td></tr>';
+        return;
+      }
+
+      const isCancelled = (e) => e.colF && e.colF.toString().includes("ยกเลิก");
+
+      let filtered = cache.entries.filter(e =>
+        e.id !== undefined && e.id !== null && e.id !== "" &&
+        e.date !== undefined && e.date !== null && e.date !== "" &&
+        !isCancelled(e)
+      );
+
+      const summary = {};
+
+      filtered.forEach(e => {
+        const catCode = e.catCode || 'ไม่ระบุหมวด';
+        const catName = e.catName || '';
+
+        if (!summary[catCode]) {
+          summary[catCode] = { code: catCode, name: catName, pending: 0, pendingGf: 0, entries: [] };
+        }
+
+        const amt = Number(e.amount || 0);
+        const deduct = Number(e.amountDeduct || 0);
+
+        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "");
+        const isPendingGF = (deduct && deduct !== 0) && (!e.colE || e.colE.toString().trim() === "");
+
+        if (isPending || isPendingGF) {
+          summary[catCode].entries.push({ ...e, isPending, isPendingGF });
+
+          if (!excludedSpendingItems.has(e.id)) {
+            if (isPending) summary[catCode].pending += amt;
+            else if (isPendingGF) summary[catCode].pendingGf += deduct;
+          }
+        }
+      });
+
+      const rows = Object.values(summary).sort((a, b) => a.code.localeCompare(b.code));
+
+      let totalPending = 0;
+      let totalPendingGf = 0;
+
+      let html = '';
+      if (rows.length === 0) {
+        html = '<tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">ไม่พบข้อมูลแผนการใช้จ่าย</td></tr>';
+      } else {
+        rows.forEach(r => {
+          let includedCount = 0;
+          let totalCount = r.entries.length;
+          r.entries.forEach(entry => {
+            if (!excludedSpendingItems.has(entry.id)) includedCount++;
+          });
+
+          if (totalCount > 0) {
+            const rowTotal = r.pending + r.pendingGf;
+            totalPending += r.pending;
+            totalPendingGf += r.pendingGf;
+
+            let isExcludedCat = (includedCount === 0);
+
+            // Generate Checkbox
+            let indeterminateScript = (includedCount > 0 && includedCount < totalCount) ? `<script>setTimeout(() => { const cb = document.getElementById('cb-${r.code}'); if(cb) cb.indeterminate = true; }, 10);<\/script>` : '';
+            let catCheckbox = `<input type="checkbox" id="cb-${r.code}" style="cursor:pointer; transform:scale(1.2);" class="hide-on-print" ${includedCount > 0 ? 'checked' : ''} onclick="toggleSpendingCategory('${r.code}', event)">${indeterminateScript}`;
+
+            let fullText = r.code !== 'ไม่ระบุหมวด' ? r.code + ' ' + r.name : r.code;
+            if (window.planConfig && window.planConfig.categories) {
+              for (const group of window.planConfig.categories) {
+                const opt = group.options.find(o => o.code === r.code);
+                if (opt && opt.text) {
+                  fullText = opt.text;
+                  break;
+                }
+              }
+            }
+
+            let isExpanded = expandedSpendingCategories.has('sub-' + r.code);
+
+            html += `
+              <tr class="table-row-clickable ${isExcludedCat ? 'excluded-row' : ''}" onclick="toggleSubTable('sub-${r.code}')" title="คลิกเพื่อดูรายละเอียดรายการ" style="cursor:pointer; ${isExcludedCat ? 'opacity:0.5; background-color:#f8fafc;' : ''}">
+                <td style="text-align:center; width:50px; padding:16px 8px;" class="hide-on-print" onclick="event.stopPropagation();">
+                   ${catCheckbox}
+                </td>
+                <td style="font-weight:700; color:var(--primary-dark); padding:16px 12px; ${isExcludedCat ? 'text-decoration:line-through;' : ''}">
+                   <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="material-symbols-outlined hide-on-print" id="icon-sub-${r.code}" style="font-size:18px; color:var(--text-muted); transition:transform 0.3s; transform:${isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">expand_more</span>
+                      ${fullText}
+                   </div>
+                </td>
+                <td style="text-align:right; color:var(--primary-dark); font-weight:700; padding:16px 12px;">${r.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td style="text-align:right; color:#c2410c; font-weight:700; padding:16px 12px;">${r.pendingGf.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td style="text-align:right; font-weight:800; font-size:14px; padding:16px 12px;">${rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+              </tr>
+            `;
+
+            let subRowsHtml = '';
+            r.entries.forEach(entry => {
+              const badge = entry.isPendingGF
+                ? '<span class="status-tag status-normal" style="font-size:9px; padding:2px 4px;">รอ GF</span>'
+                : '<span class="status-tag status-pending" style="font-size:9px; padding:2px 4px;">ยังไม่ตัด</span>';
+              const money = entry.isPendingGF ? entry.amountDeduct : entry.amount;
+              let isExcludedItem = excludedSpendingItems.has(entry.id);
+
+              subRowsHtml += `
+                    <tr style="cursor:pointer; ${isExcludedItem ? 'opacity:0.5; background-color:#f8fafc;' : ''}" class="${isExcludedItem ? 'excluded-row' : ''}" onclick="event.stopPropagation(); selectFromTable('${entry.id}')">
+                       <td style="text-align:center; border-bottom:1px solid #e2e8f0; width:40px; padding:8px;" class="hide-on-print" onclick="event.stopPropagation();">
+                         <input type="checkbox" style="cursor:pointer; transform:scale(1.1);" ${!isExcludedItem ? 'checked' : ''} onclick="toggleSpendingItem('${entry.id}', event)">
+                       </td>
+                       <td style="padding:8px 12px; font-size:11px; border-bottom:1px solid #e2e8f0; color:var(--primary); font-weight:700; width:1%; white-space:nowrap; text-align:left; ${isExcludedItem ? 'text-decoration:line-through;' : ''}">#${entry.id}</td>
+                       <td style="padding:8px 12px; font-size:11px; border-bottom:1px solid #e2e8f0; width:1%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px; text-align:left;" title="${entry.name || ''}">${entry.name || '-'}</td>
+                       <td style="padding:8px 12px; font-size:11px; border-bottom:1px solid #e2e8f0; white-space:normal; word-break:break-word; overflow-wrap:anywhere; text-align:left;">${entry.desc || '-'}</td>
+                       <td style="padding:8px 12px; font-size:11px; border-bottom:1px solid #e2e8f0; width:1%; white-space:nowrap; text-align:left;">${badge}</td>
+                       <td style="padding:8px 12px; font-size:11px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:700; width:1%; white-space:nowrap;">${Number(money || 0).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+              <tr id="sub-${r.code}" style="display:${isExpanded ? 'table-row' : 'none'}; background-color:#f8fafc;" class="${isExcludedCat ? 'hide-on-print' : ''}">
+                <td colspan="5" style="padding:16px 24px; border-bottom:2px solid var(--border);">
+                   <div style="background:white; border-radius:8px; border:1px solid var(--border); overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                     <table style="width:100%; border-collapse:collapse;">
+                        <thead style="background:#f1f5f9; font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">
+                           <tr>
+                             <th style="padding:8px; text-align:center; width:40px;" class="hide-on-print">เลือก</th>
+                             <th style="padding:8px 12px; text-align:left; width:1%; white-space:nowrap;">ID</th>
+                             <th style="padding:8px 12px; text-align:left; width:1%; white-space:nowrap;">ผู้เบิก</th>
+                             <th style="padding:8px 12px; text-align:left;">รายการ</th>
+                             <th style="padding:8px 12px; text-align:left; width:1%; white-space:nowrap;">สถานะ</th>
+                             <th style="padding:8px 12px; text-align:right; width:1%; white-space:nowrap;">จำนวนเงิน (฿)</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           ${subRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:16px; font-size:12px; color:var(--text-muted);">ไม่มีรายการย่อย</td></tr>'}
+                        </tbody>
+                     </table>
+                   </div>
+                </td>
+              </tr>
+            `;
+          }
+        });
+
+        const grandTotal = totalPending + totalPendingGf;
+        html += `
+          <tr style="background-color: var(--primary-light); font-weight: 800;">
+            <td colspan="2" style="text-align:right; color:var(--primary-dark); padding:20px 16px; font-size:16px;">รวมทั้งสิ้นตามแผนการใช้จ่าย</td>
+            <td style="text-align:right; color:var(--primary-dark); font-size:15px; padding:20px 12px;">${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td style="text-align:right; color:#c2410c; font-size:15px; padding:20px 12px;">${totalPendingGf.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td style="text-align:right; font-size:16px; padding:20px 12px;">${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>
+        `;
+
+        window.currentGrandTotal = grandTotal;
+        html += `
+          <tr style="background-color: #fefce8; font-weight: 800;">
+            <td colspan="4" style="text-align:right; color:#854d0e; padding:20px 16px; font-size:16px;">งบประมาณคงเหลือหลังหักแผนการใช้จ่าย (Net)</td>
+            <td style="text-align:right; color:#854d0e; font-size:18px; padding:20px 12px;" id="finalRemainingValue">...</td>
+          </tr>
+        `;
+        setTimeout(updateFinalRemainingUI, 50);
+      }
+
+      tbody.innerHTML = html;
+    }
+
+    function toggleSubTable(id) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById('icon-' + id.replace('sub-', ''));
+      if (el) {
+        if (el.style.display === 'none') {
+          el.style.display = 'table-row';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+          expandedSpendingCategories.add(id);
+        } else {
+          el.style.display = 'none';
+          if (icon) icon.style.transform = 'rotate(0deg)';
+          expandedSpendingCategories.delete(id);
+        }
+      }
+    }
+
     function renderTable(q = "") {
       const tbody = document.getElementById('tableBody');
       if (!currentPlan) {
@@ -2294,6 +2802,52 @@
       }
       setStatus('ready', 'พร้อมเริ่มงาน');
     };
+
+    window.currentBuranakanRemaining = 0;
+    window.currentGrandTotal = 0;
+
+    function updateFinalRemainingUI() {
+      const remain = window.currentBuranakanRemaining || 0;
+      const plan = window.currentGrandTotal || 0;
+      const finalVal = remain - plan;
+
+      const elCard = document.getElementById('bk-final-remain');
+      if (elCard) elCard.innerText = finalVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const elRow = document.getElementById('finalRemainingValue');
+      if (elRow) elRow.innerText = finalVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fetchBuranakanData() {
+      document.getElementById('buranakanLoader').style.display = 'block';
+      document.getElementById('buranakanError').style.display = 'none';
+      document.getElementById('buranakanCards').style.display = 'none';
+
+      const pKey = encodeURIComponent(currentPlan || '1.ฝนหลวง');
+      fetch(`${API}?action=getBuranakanData&planKey=${pKey}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('buranakanLoader').style.display = 'none';
+          if (data.error) {
+            document.getElementById('buranakanError').style.display = 'block';
+            document.getElementById('buranakanError').innerText = data.error;
+          } else if (data.success) {
+            document.getElementById('buranakanCards').style.display = 'grid';
+            document.getElementById('bk-g9').innerText = data.data.budgetAfterAdjust.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('bk-n9').innerText = data.data.gfTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('bk-l9').innerText = data.data.contractRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('bk-remain').innerText = data.data.budgetRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            window.currentBuranakanRemaining = data.data.budgetRemaining;
+            updateFinalRemainingUI();
+          }
+        })
+        .catch(err => {
+          document.getElementById('buranakanLoader').style.display = 'none';
+          document.getElementById('buranakanError').style.display = 'block';
+          document.getElementById('buranakanError').innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message;
+        });
+    }
   </script>
 </body>
 
