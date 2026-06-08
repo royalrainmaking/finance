@@ -80,7 +80,7 @@ function budget_getBuranakanData(planKey) {
     return isNaN(num) ? 0 : num;
   };
 
-  const rowNum = (planKey === '2.1 บินสาธาฯ') ? 51 : 16;
+  const rowNum = (planKey === '2.1 บินสาธาฯ') ? 51 : (planKey === '2.ด้านการบิน') ? 17 : 16;
   const gVal = parseSheetNum(targetSheet.getRange('G' + rowNum).getValue());
   const nVal = parseSheetNum(targetSheet.getRange('N' + rowNum).getValue());
   const lVal = parseSheetNum(targetSheet.getRange('L' + rowNum).getValue());

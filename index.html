@@ -1352,29 +1352,29 @@
           <div id="buranakanCards"
             style="display:none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
             <div class="stat-card" style="padding:16px; border-left: 4px solid var(--primary); min-width: 0;">
-              <div class="stat-title" style="font-size:12px; white-space: normal;">งบดำเนินงาน (คอลัมน์ G)</div>
+              <div class="stat-title" style="font-size:12px; white-space: normal;">งบประมาณที่ได้รับจัดสรร</div>
               <div class="stat-value" id="bk-g9" style="font-size:18px; word-break: break-word;">0.00</div>
             </div>
             <div class="stat-card" style="padding:16px; border-left: 4px solid #f59e0b; min-width: 0;">
-              <div class="stat-title" style="font-size:12px; white-space: normal;">GF รวมทั้งหมด (คอลัมน์ N)</div>
+              <div class="stat-title" style="font-size:12px; white-space: normal;">GF รวมทั้งหมด</div>
               <div class="stat-value" id="bk-n9" style="color:#b45309; font-size:18px; word-break: break-word;">0.00
               </div>
             </div>
             <div class="stat-card" style="padding:16px; border-left: 4px solid #8b5cf6; min-width: 0;">
-              <div class="stat-title" style="font-size:12px; white-space: normal;">สัญญาคงเหลือ (คอลัมน์ L)</div>
+              <div class="stat-title" style="font-size:12px; white-space: normal;">สัญญาคงเหลือ</div>
               <div class="stat-value" id="bk-l9" style="color:#5b21b6; font-size:18px; word-break: break-word;">0.00
               </div>
             </div>
             <div class="stat-card"
               style="padding:16px; border-left: 4px solid #10b981; background:linear-gradient(to bottom right, #f0fdf4, #ffffff); min-width: 0;">
-              <div class="stat-title" style="font-size:12px; white-space: normal;">งบประมาณคงเหลือ (G - N - L)</div>
+              <div class="stat-title" style="font-size:12px; white-space: normal;">งบประมาณคงเหลือ </div>
               <div class="stat-value" id="bk-remain" style="color:#065f46; font-size:20px; word-break: break-word;">0.00
               </div>
             </div>
             <div class="stat-card"
               style="padding:16px; border-left: 4px solid #e11d48; background:linear-gradient(to bottom right, #fff1f2, #ffffff); min-width: 0;">
               <div class="stat-title" style="font-size:12px; color:#be123c; white-space: normal;">คงเหลือหลังหักแผน
-                (Net)</div>
+              </div>
               <div class="stat-value" id="bk-final-remain"
                 style="color:#be123c; font-size:20px; word-break: break-word;">0.00</div>
             </div>
@@ -1787,7 +1787,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxm2baedI9tj1TogII9OKuKt9cpDUQSUSrKclXg19YN5AOdntDPpCZCiagArlJ79i5X/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxbDwIjo3NBJTVxrFqO0YPivjRe5Y2y18EQqqM7m7kWcMsaubjxzhzg3vVCaySON2Q/exec';
     let currentPlan = null;
     let cache = null;
     let excludedSpendingItems = new Set();
@@ -1849,13 +1849,13 @@
       '2.1 บินสาธาฯ': [
         {
           label: 'หมวด ค่าสาธารณูปโภค', options: [
-            { value: '17', code: 'ก.', text: 'ก. - ค่าโทรศัพท์สำนักงาน' },
-            { value: '20', code: 'ข.', text: 'ข. - ค่าโทรศัพท์เคลื่อนที่' },
-            { value: '23', code: 'ค.', text: 'ค. - ค่าน้ำประปา' },
-            { value: '26', code: 'ง.', text: 'ง. - ค่าไปรษณีย์' },
-            { value: '29', code: 'จ.', text: 'จ. - ค่าไฟฟ้า' },
-            { value: '32', code: 'ฉ.', text: 'ฉ. - ค่าบริการโทรคมนาคม (Internet)' },
-            { value: '35', code: 'ช.', text: 'ช. - ค่า GPS' }
+            { value: '14', code: 'ก.', text: 'ก. - ค่าโทรศัพท์สำนักงาน' },
+            { value: '17', code: 'ข.', text: 'ข. - ค่าโทรศัพท์เคลื่อนที่' },
+            { value: '20', code: 'ค.', text: 'ค. - ค่าน้ำประปา' },
+            { value: '23', code: 'ง.', text: 'ง. - ค่าไปรษณีย์' },
+            { value: '26', code: 'จ.', text: 'จ. - ค่าไฟฟ้า' },
+            { value: '29', code: 'ฉ.', text: 'ฉ. - ค่าบริการโทรคมนาคม (Internet)' },
+            { value: '32', code: 'ช.', text: 'ช. - ค่า GPS' }
           ]
         }
       ]
