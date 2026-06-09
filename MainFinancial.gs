@@ -111,13 +111,20 @@ function budget_applyFormulas(sheet, row) {
     const colName = sheet.getRange(row, c-1).getA1Notation().replace(/\d+/, '');
     sheet.getRange(row, c).setFormula(`=IF($E${row}<>"",${colName}${row},"")`);
   });
-  const reserveRange = ["N","Q","T","W","Z","AC","AF","AI","AL","AO","AR","AU","AX","BA","BD","BG","BJ","BM","BP","BS","BV","BY","CB","CE","CH","CK","CN","CQ","CT","CW"];
-  const deductRange  = ["O","R","U","X","AA","AD","AG","AJ","AM","AP","AS","AV","AY","BB","BE","BH","BK","BN","BQ","BT","BW","BZ","CC","CF","CI","CL","CO","CR","CU","CX"];
-  const balanceRange = ["P","S","V","Y","AB","AE","AH","AK","AN","AQ","AT","AW","AZ","BC","BF","BI","BL","BO","BR","BU","BX","CA","CD","CG","CJ","CM","CP","CS","CV","CY"];
-  sheet.getRange(row, 104).setFormula("=" + reserveRange.map(c => `${c}${row}`).join("+")); // CZ
-  sheet.getRange(row, 105).setFormula("=" + deductRange.map(c => `${c}${row}`).join("+"));  // DA
-  sheet.getRange(row, 106).setFormula("=" + balanceRange.map(c => `${c}${row}`).join("+")); // DB
-  sheet.getRange(row, 107).setFormula(`=M${row}`); // DC
+  if (sheet.getName() === '2.1 บินสาธาฯ') {
+    sheet.getRange(row, 104).setFormula(`=AI${row}`); // CZ
+    sheet.getRange(row, 105).setFormula(`=AJ${row}`); // DA
+    sheet.getRange(row, 106).setFormula(`=AK${row}`); // DB
+    sheet.getRange(row, 107).setFormula(`=AL${row}`); // DC
+  } else {
+    const reserveRange = ["N","Q","T","W","Z","AC","AF","AI","AL","AO","AR","AU","AX","BA","BD","BG","BJ","BM","BP","BS","BV","BY","CB","CE","CH","CK","CN","CQ","CT","CW"];
+    const deductRange  = ["O","R","U","X","AA","AD","AG","AJ","AM","AP","AS","AV","AY","BB","BE","BH","BK","BN","BQ","BT","BW","BZ","CC","CF","CI","CL","CO","CR","CU","CX"];
+    const balanceRange = ["P","S","V","Y","AB","AE","AH","AK","AN","AQ","AT","AW","AZ","BC","BF","BI","BL","BO","BR","BU","BX","CA","CD","CG","CJ","CM","CP","CS","CV","CY"];
+    sheet.getRange(row, 104).setFormula("=" + reserveRange.map(c => `${c}${row}`).join("+")); // CZ
+    sheet.getRange(row, 105).setFormula("=" + deductRange.map(c => `${c}${row}`).join("+"));  // DA
+    sheet.getRange(row, 106).setFormula("=" + balanceRange.map(c => `${c}${row}`).join("+")); // DB
+    sheet.getRange(row, 107).setFormula(`=M${row}`); // DC
+  }
 }
 
 function budget_getInitialData(planKey) {
