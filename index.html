@@ -1031,6 +1031,14 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* Required Field Indicator */
+    input[required], select[required], textarea[required] {
+      border-left: 3px solid #ef4444;
+    }
+    input[required]:valid, select[required]:valid, textarea[required]:valid {
+      border-left: 3px solid #10b981;
+    }
   </style>
 
 </head>
@@ -1443,7 +1451,7 @@
               <div class="field"><label>เลขที่ระบบตัดยอด</label><input type="text" name="colF"></div>
               <div class="field" style="position:relative;">
                 <label>ชื่อผู้เบิก/ยืม</label>
-                <input type="text" name="name" oninput="showFloatingSuggestions(this, 'sugRDName', 'names')" required>
+                <input type="text" name="name" id="rdNameSug" oninput="showFloatingSuggestions(this, 'sugRDName', 'names')" required>
                 <div id="sugRDName" class="floating-suggestions"></div>
               </div>
               <div class="field"><label>ฝ่าย</label><select name="dept" id="rdDept" required></select></div>
@@ -1455,7 +1463,7 @@
                   required></div>
               <div class="field full" style="position:relative;">
                 <label>รายการ/คำอธิบาย</label>
-                <textarea name="desc" rows="2" oninput="showFloatingSuggestions(this, 'sugRDDesc', 'descs')"
+                <textarea name="desc" id="rdDescSug" rows="2" oninput="showFloatingSuggestions(this, 'sugRDDesc', 'descs')"
                   required></textarea>
                 <div id="sugRDDesc" class="floating-suggestions"></div>
               </div>
@@ -2210,7 +2218,8 @@
         e.refNo.toString().toLowerCase().includes(query) ||
         (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
         (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
-        e.name.toLowerCase().includes(query)
+        e.name.toLowerCase().includes(query) ||
+        (e.date && e.date.toLowerCase().includes(query))
       ).slice(0, 10);
 
       container.innerHTML = matches.map(m => `
@@ -2227,6 +2236,63 @@
     function showSearchDetail(id) {
       const e = cache.entries.find(x => x.id == id);
       const detailContainer = document.getElementById('searchDetail');
+      
+      const targetInfo = extractMissionInfo(e.desc);
+      const targetDate = targetInfo.timestamp || (e.letterDateRaw ? new Date(e.letterDateRaw).getTime() : 0);
+
+      const related = cache.entries.filter(x => {
+        if (x.id == id) return false;
+        const xInfo = extractMissionInfo(x.desc);
+        if (xInfo.mission !== targetInfo.mission || xInfo.province !== targetInfo.province || xInfo.detail !== targetInfo.detail) return false;
+        
+        const xDate = xInfo.timestamp || (x.letterDateRaw ? new Date(x.letterDateRaw).getTime() : 0);
+        return Math.abs(xDate - targetDate) <= 3 * 24 * 60 * 60 * 1000;
+      });
+
+      let relatedHtml = '';
+      if (related.length > 0) {
+        const groupTotal = related.reduce((sum, r) => sum + (Number(r.amount) || 0), Number(e.amount) || 0);
+        const totalItems = related.length + 1; // including the main item
+
+        relatedHtml = `
+          <div style="margin-top:30px; border-top: 2px solid var(--border); padding-top:20px; text-align:left;">
+            <div style="font-size:14px; font-weight:800; color:var(--text-muted); margin-bottom:12px;">รายการใกล้เคียง คุณอาจจะลืม (กลุ่มเดียวกัน)</div>
+            
+            <div style="background:var(--primary-light); padding:12px; border-radius:8px; border:1px solid var(--primary); margin-bottom:12px; display:flex; align-items:center; gap:12px;">
+              <div style="width:32px; height:32px; background:white; color:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px;">explore</span>
+              </div>
+              <div>
+                <div style="font-weight:800; color:var(--primary-dark); font-size:13px;">ภารกิจ: ${targetInfo.mission} | จ.${targetInfo.province}</div>
+                <div style="font-size:11px; color:var(--primary); font-weight:700; margin-top:2px;">รวมทั้งสิ้น ${totalItems} รายการ | ยอดงบประมาณกลุ่ม: ${groupTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ฿</div>
+              </div>
+            </div>
+
+            <div style="margin-top:30px; position:relative;">
+              <div style="position:absolute; top:50%; left:0; right:0; height:2px; background:var(--border); z-index:1;"></div>
+              <div style="position:relative; z-index:2; text-align:center;">
+                <span style="background:#fffbeb; padding:6px 16px; font-size:13px; font-weight:800; color:#b45309; border:2px dashed #fbbf24; border-radius:20px; display:inline-flex; align-items:center; gap:8px;">
+                  <span class="material-symbols-outlined" style="font-size:18px;">linear_scale</span>
+                  รายการที่คล้ายกัน (${related.length} รายการ)
+                </span>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+              ${related.map(r => `
+                <div style="padding:12px; border:1px solid var(--border); border-radius:8px; cursor:pointer; background:#f8fafc; transition:0.2s;" onclick="showSearchDetail('${r.id}')" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-weight:800; font-size:13px; color:var(--primary-dark);">#${r.id} - ${r.refNo}</div>
+                    <div style="font-weight:700; color:var(--primary); font-size:13px; white-space:nowrap; margin-left:10px;">${Number(r.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ฿</div>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-main); margin-top:6px; line-height:1.4;">${r.desc}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
       detailContainer.innerHTML = createPreviewHTML(e) + `
         <button class="submit-btn" style="margin-top:20px;" onclick="selectFromTable('${id}')">
           <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -2234,7 +2300,7 @@
             ดำเนินการกับรายการนี้
           </div>
         </button>
-      `;
+      ` + relatedHtml;
     }
 
     function loadEdit(id) {
@@ -2297,7 +2363,14 @@
         }
       }
 
-      return { mission, province, timestamp };
+      // 4. Specific Detail (Aircraft/Vehicle) Detection for better grouping
+      let detail = '';
+      const detailMatch = d.match(/([A-Za-z0-9-]+\s*มล\.\s*\d+|มล\.\s*\d+|[A-Za-z]{4,}\s*\d{2,})/i);
+      if (detailMatch) {
+        detail = detailMatch[1].trim().toUpperCase();
+      }
+
+      return { mission, province, timestamp, detail };
     }
 
     function toggleSpendingItem(id, event) {
@@ -2586,8 +2659,11 @@
       if (fCat) filtered = filtered.filter(e => e.catCode === fCat);
       if (fRem) filtered = filtered.filter(e => e.type === fRem);
 
-      if (q.trim()) {
-        const query = q.trim().toLowerCase();
+      const doGroup = document.getElementById('groupToggle').checked;
+      let query = q.trim().toLowerCase();
+
+      // If NOT grouping, apply search filter directly to items
+      if (!doGroup && query) {
         filtered = filtered.filter(e =>
           e.id.toString().toLowerCase().includes(query) ||
           e.refNo.toString().toLowerCase().includes(query) ||
@@ -2596,7 +2672,8 @@
           e.name.toLowerCase().includes(query) ||
           e.dept.toLowerCase().includes(query) ||
           e.desc.toLowerCase().includes(query) ||
-          (e.catCode && e.catCode.toLowerCase().includes(query))
+          (e.catCode && e.catCode.toLowerCase().includes(query)) ||
+          (e.date && e.date.toLowerCase().includes(query))
         );
       }
 
@@ -2606,7 +2683,7 @@
       if (selectAllCb) selectAllCb.checked = false;
 
       // --- Grouping Logic ---
-      const groups = [];
+      let groups = [];
       if (filtered.length > 0) {
         // Sort by date (descending to show newest groups first)
         filtered.sort((a, b) => {
@@ -2621,7 +2698,7 @@
           const eDate = info.timestamp || (e.letterDateRaw ? new Date(e.letterDateRaw).getTime() : 0);
 
           let targetGroup = groups.find(g => {
-            if (g.mission !== info.mission || g.province !== info.province) return false;
+            if (g.mission !== info.mission || g.province !== info.province || g.detail !== info.detail) return false;
             // Check if within 3 days of any entry in this group
             return g.entries.some(ge => {
               const geInfo = extractMissionInfo(ge.desc);
@@ -2633,8 +2710,25 @@
           if (targetGroup) {
             targetGroup.entries.push(e);
           } else {
-            groups.push({ mission: info.mission, province: info.province, entries: [e] });
+            groups.push({ mission: info.mission, province: info.province, detail: info.detail, entries: [e] });
           }
+        });
+      }
+
+      // If grouping is enabled and there's a search query, filter groups by keeping the whole group if any entry matches
+      if (doGroup && query) {
+        groups = groups.filter(g => {
+          return g.entries.some(e => 
+            e.id.toString().toLowerCase().includes(query) ||
+            e.refNo.toString().toLowerCase().includes(query) ||
+            (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+            (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
+            e.name.toLowerCase().includes(query) ||
+            e.dept.toLowerCase().includes(query) ||
+            e.desc.toLowerCase().includes(query) ||
+            (e.catCode && e.catCode.toLowerCase().includes(query)) ||
+            (e.date && e.date.toLowerCase().includes(query))
+          );
         });
       }
 
@@ -2670,11 +2764,31 @@
         </tr>
       `;
 
-      const doGroup = document.getElementById('groupToggle').checked;
-
       if (doGroup) {
         tbody.innerHTML = groups.length > 0 ? groups.map(g => {
           const groupTotal = g.entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+          
+          let matchedEntries = [];
+          let relatedEntries = [];
+          
+          if (query) {
+            g.entries.forEach(e => {
+              const isMatch = e.id.toString().toLowerCase().includes(query) ||
+                              e.refNo.toString().toLowerCase().includes(query) ||
+                              (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+                              (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
+                              e.name.toLowerCase().includes(query) ||
+                              e.dept.toLowerCase().includes(query) ||
+                              e.desc.toLowerCase().includes(query) ||
+                              (e.catCode && e.catCode.toLowerCase().includes(query)) ||
+                              (e.date && e.date.toLowerCase().includes(query));
+              if (isMatch) matchedEntries.push(e);
+              else relatedEntries.push(e);
+            });
+          } else {
+            matchedEntries = g.entries;
+          }
+
           const groupHeader = `
             <tr class="group-header">
               <td colspan="10" style="background:#f8fafc; border-bottom:1px solid var(--border); padding:12px 16px;">
@@ -2693,7 +2807,26 @@
               </td>
             </tr>
           `;
-          return groupHeader + g.entries.map(rowTpl).join('');
+
+          let htmlStr = groupHeader;
+          if (matchedEntries.length > 0) {
+            htmlStr += matchedEntries.map(rowTpl).join('');
+          }
+          if (relatedEntries.length > 0) {
+            htmlStr += `
+              <tr>
+                <td colspan="10" style="background: linear-gradient(90deg, #fef3c7, #fde68a); text-align:center; padding:12px; font-size:13px; font-weight:900; color:#92400e; border-top: 2px dashed #fbbf24; border-bottom: 2px dashed #fbbf24; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); letter-spacing: 0.5px;">
+                  <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">linear_scale</span>
+                    รายการที่คล้ายกัน (${relatedEntries.length} รายการ)
+                    <span class="material-symbols-outlined" style="font-size:18px;">linear_scale</span>
+                  </div>
+                </td>
+              </tr>
+            `;
+            htmlStr += relatedEntries.map(rowTpl).join('');
+          }
+          return htmlStr;
         }).join('') : '<tr><td colspan="10" style="text-align:center; padding:40px; color:var(--text-muted);">ไม่พบข้อมูลในเงื่อนไขที่เลือก หรือ คอลัมน์ G ยังไม่มีเลขหนังสือ</td></tr>';
       } else {
         tbody.innerHTML = filtered.length > 0 ? filtered.map(rowTpl).join('') : '<tr><td colspan="10" style="text-align:center; padding:40px; color:var(--text-muted);">ไม่พบข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
@@ -2781,13 +2914,13 @@
 
     document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); setView('table'); init(); e.target.reset(); } };
     document.getElementById('reserveAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserveAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการกันเงินเพิ่มเรียบร้อย ID: ' + r.id); init(); e.target.reset(); document.getElementById('reserveAddFields').style.display = 'none'; document.getElementById('prvRA').style.display = 'none'; } };
-    document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย' + (r.id ? ' ID: ' + r.id : '')); setView('table'); init(); } };
-    document.getElementById('deductAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeductAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการตัดยอดเพิ่มเรียบร้อย ID: ' + r.id); init(); } };
-    document.getElementById('cancelForm').onsubmit = async (e) => { e.preventDefault(); if (!confirm('ยืนยันระบบการยกเลิกกันเงิน?')) return; const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitCancel', data); if (r?.success) { showModal('สำเร็จ', 'ยกเลิกรายการกันเงินเรียบร้อยแล้ว' + (data.id ? ' ID: ' + data.id : '')); setView('table'); init(); } };
-    document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); setView('table'); init(); } };
+    document.getElementById('deductForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeduct', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'ตัดยอดเรียบร้อย' + (r.id ? ' ID: ' + r.id : '')); setView('table'); init(); e.target.reset(); } };
+    document.getElementById('deductAddForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitDeductAdd', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'แทรกรายการตัดยอดเพิ่มเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
+    document.getElementById('cancelForm').onsubmit = async (e) => { e.preventDefault(); if (!confirm('ยืนยันระบบการยกเลิกกันเงิน?')) return; const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitCancel', data); if (r?.success) { showModal('สำเร็จ', 'ยกเลิกรายการกันเงินเรียบร้อยแล้ว' + (data.id ? ' ID: ' + data.id : '')); setView('table'); init(); e.target.reset(); } };
+    document.getElementById('offsetForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitOffset', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'หักล้างเรียบร้อย ID: ' + r.id); setView('table'); init(); e.target.reset(); } };
 
 
-    document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdate', data); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย' + (data.id ? ' ID: ' + data.id : '')); setView('table'); init(); } };
+    document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdate', data); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย' + (data.id ? ' ID: ' + data.id : '')); setView('table'); init(); e.target.reset(); } };
     document.getElementById('reserveDeductForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); data.col = data.cat; const r = await call('submitReserveAndDeduct', data); if (r?.success) { showModal('สำเร็จ', 'บันทึกรายการด่วนเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
 
     window.onload = () => {
