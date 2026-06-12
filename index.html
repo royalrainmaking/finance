@@ -1033,10 +1033,15 @@
     }
 
     /* Required Field Indicator */
-    input[required], select[required], textarea[required] {
+    input[required],
+    select[required],
+    textarea[required] {
       border-left: 3px solid #ef4444;
     }
-    input[required]:valid, select[required]:valid, textarea[required]:valid {
+
+    input[required]:valid,
+    select[required]:valid,
+    textarea[required]:valid {
       border-left: 3px solid #10b981;
     }
   </style>
@@ -1451,7 +1456,8 @@
               <div class="field"><label>เลขที่ระบบตัดยอด</label><input type="text" name="colF"></div>
               <div class="field" style="position:relative;">
                 <label>ชื่อผู้เบิก/ยืม</label>
-                <input type="text" name="name" id="rdNameSug" oninput="showFloatingSuggestions(this, 'sugRDName', 'names')" required>
+                <input type="text" name="name" id="rdNameSug"
+                  oninput="showFloatingSuggestions(this, 'sugRDName', 'names')" required>
                 <div id="sugRDName" class="floating-suggestions"></div>
               </div>
               <div class="field"><label>ฝ่าย</label><select name="dept" id="rdDept" required></select></div>
@@ -1463,8 +1469,8 @@
                   required></div>
               <div class="field full" style="position:relative;">
                 <label>รายการ/คำอธิบาย</label>
-                <textarea name="desc" id="rdDescSug" rows="2" oninput="showFloatingSuggestions(this, 'sugRDDesc', 'descs')"
-                  required></textarea>
+                <textarea name="desc" id="rdDescSug" rows="2"
+                  oninput="showFloatingSuggestions(this, 'sugRDDesc', 'descs')" required></textarea>
                 <div id="sugRDDesc" class="floating-suggestions"></div>
               </div>
               <div class="field full"><label>หมายเหตุ (Column B)</label><input type="text" name="remark"></div>
@@ -1613,6 +1619,9 @@
             <div class="form-grid">
               <div class="field full"><label>ชื่อผู้เบิก (แก้ไขได้)</label><input type="text" name="name" id="nmD">
               </div>
+              <div class="field full"><label>รายละเอียดโครงการ (แก้ไขได้)</label><textarea name="desc" id="descD"
+                  rows="2"></textarea>
+              </div>
               <div class="field"><label>เลขที่หนังสือตัดยอด (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
               <div class="field"><label>วันที่หนังสือ (H)</label><input type="date" name="liquidateLetterDate" required>
@@ -1640,6 +1649,9 @@
             <div class="form-grid">
               <div class="field full"><label>ชื่อผู้เบิก (แก้ไขได้)</label><input type="text" name="name" id="nmDA">
               </div>
+              <div class="field full"><label>รายละเอียดโครงการ (แก้ไขได้)</label><textarea name="desc" id="descDA"
+                  rows="2"></textarea>
+              </div>
               <div class="field"><label>เลขที่หนังสือตัดยอดเพิ่ม (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
               <div class="field"><label>วันที่หนังสือ (H)</label><input type="date" name="liquidateLetterDate" required>
@@ -1666,6 +1678,9 @@
             </div>
             <div class="form-grid">
               <div class="field full"><label>ชื่อผู้เบิก (แก้ไขได้)</label><input type="text" name="name" id="nmO">
+              </div>
+              <div class="field full"><label>รายละเอียดโครงการ (แก้ไขได้)</label><textarea name="desc" id="descO"
+                  rows="2"></textarea>
               </div>
               <div class="field"><label>เลขที่หนังสือหักล้าง (D)</label><input type="text" name="liquidateRefNo"
                   required></div>
@@ -1795,7 +1810,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbxbDwIjo3NBJTVxrFqO0YPivjRe5Y2y18EQqqM7m7kWcMsaubjxzhzg3vVCaySON2Q/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbydvJ5ClEUqKX2xr-jSCR-U5m6mESvqDw6yB8UZdCyQqki1PgmikMRx98wd7jvCIng/exec';
     let currentPlan = null;
     let cache = null;
     let excludedSpendingItems = new Set();
@@ -2101,7 +2116,7 @@
 
 
     function createPreviewHTML(e, isError = false, errorMsg = "") {
-      const isPO = e.type && e.type.toString().toUpperCase() === 'PO';
+      const isPO = (e.type && e.type.toString().toUpperCase() === 'PO') || (e.colF && e.colF.toString().toUpperCase() === 'PO');
       const statusClass = isPO ? 'status-po' : 'status-normal';
       const statusLabel = isPO ? 'PURCHASE ORDER' : (e.type === 'หักล้างเงินยืม' ? 'หักล้าง' : 'NORMAL');
       const fmt = (v) => (v !== "" && v !== null && v !== undefined && v !== 0) ? Number(v).toLocaleString() + " ฿" : "";
@@ -2193,7 +2208,7 @@
       if (view === 'D' || view === 'O' || view === 'DA' || view === 'C') {
         const modeEl = document.querySelector('input[name="mode"]:checked');
         const mode = modeEl ? modeEl.value : 'Normal';
-        const isPO = e.type && e.type.toString().toUpperCase() === 'PO';
+        const isPO = (e.type && e.type.toString().toUpperCase() === 'PO') || (e.colF && e.colF.toString().toUpperCase() === 'PO');
         if (view === 'D') {
           if (mode === 'PO' && !isPO) err = "⚠️ รายการนี้ไม่ใช่ PO";
           if (mode === 'Normal' && isPO) err = "⚠️ รายการนี้เป็น PO (ต้องตัดแบบ PO)";
@@ -2203,7 +2218,10 @@
 
 
 
-      btn.disabled = !!err; if (nm) nm.value = e.name;
+      btn.disabled = !!err;
+      if (nm) nm.value = e.name;
+      const descInput = document.getElementById('desc' + view);
+      if (descInput) descInput.value = e.desc;
       prv.innerHTML = createPreviewHTML(e, !!err, err); prv.style.display = 'block';
     }
 
@@ -2214,12 +2232,14 @@
       if (!q || q.trim().length < 2) { container.innerHTML = ''; return; }
       const query = q.trim().toLowerCase();
       const matches = cache.entries.filter(e =>
-        e.id.toString().toLowerCase().includes(query) ||
-        e.refNo.toString().toLowerCase().includes(query) ||
+        (e.id && e.id.toString().toLowerCase().includes(query)) ||
+        (e.refNo && e.refNo.toString().toLowerCase().includes(query)) ||
         (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
         (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
-        e.name.toLowerCase().includes(query) ||
-        (e.date && e.date.toLowerCase().includes(query))
+        (e.name && e.name.toString().toLowerCase().includes(query)) ||
+        (e.dept && e.dept.toString().toLowerCase().includes(query)) ||
+        (e.desc && e.desc.toString().toLowerCase().includes(query)) ||
+        (e.date && e.date.toString().toLowerCase().includes(query))
       ).slice(0, 10);
 
       container.innerHTML = matches.map(m => `
@@ -2236,7 +2256,7 @@
     function showSearchDetail(id) {
       const e = cache.entries.find(x => x.id == id);
       const detailContainer = document.getElementById('searchDetail');
-      
+
       const targetInfo = extractMissionInfo(e.desc);
       const targetDate = targetInfo.timestamp || (e.letterDateRaw ? new Date(e.letterDateRaw).getTime() : 0);
 
@@ -2244,7 +2264,7 @@
         if (x.id == id) return false;
         const xInfo = extractMissionInfo(x.desc);
         if (xInfo.mission !== targetInfo.mission || xInfo.province !== targetInfo.province || xInfo.detail !== targetInfo.detail) return false;
-        
+
         const xDate = xInfo.timestamp || (x.letterDateRaw ? new Date(x.letterDateRaw).getTime() : 0);
         return Math.abs(xDate - targetDate) <= 3 * 24 * 60 * 60 * 1000;
       });
@@ -2399,7 +2419,7 @@
       let validItemsCount = 0;
       items.forEach(e => {
         const deduct = Number(e.amountDeduct || 0);
-        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "");
+        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "" || e.colF.toString().trim().toUpperCase() === "PO");
         const isPendingGF = (deduct && deduct !== 0) && (!e.colE || e.colE.toString().trim() === "");
         if (isPending || isPendingGF) {
           validItemsCount++;
@@ -2456,7 +2476,7 @@
         const amt = Number(e.amount || 0);
         const deduct = Number(e.amountDeduct || 0);
 
-        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "");
+        const isPending = (!deduct || deduct === 0) && (!e.colE || e.colE.toString().trim() === "") && (!e.colF || e.colF.toString().trim() === "" || e.colF.toString().trim().toUpperCase() === "PO");
         const isPendingGF = (deduct && deduct !== 0) && (!e.colE || e.colE.toString().trim() === "");
 
         if (isPending || isPendingGF) {
@@ -2640,7 +2660,7 @@
           !isCancelled(e) &&
           (!e.amountDeduct || e.amountDeduct == 0) &&
           (!e.colE || e.colE.toString().trim() === "") &&
-          (!e.colF || e.colF.toString().trim() === "")
+          (!e.colF || e.colF.toString().trim() === "" || e.colF.toString().trim().toUpperCase() === "PO")
         );
       } else if (tsValue === 'liq-pending-gf') {
         filtered = filtered.filter(e => !isCancelled(e) && (e.amountDeduct && e.amountDeduct != 0) && (!e.colE || e.colE.toString().trim() === ""));
@@ -2665,15 +2685,15 @@
       // If NOT grouping, apply search filter directly to items
       if (!doGroup && query) {
         filtered = filtered.filter(e =>
-          e.id.toString().toLowerCase().includes(query) ||
-          e.refNo.toString().toLowerCase().includes(query) ||
+          (e.id && e.id.toString().toLowerCase().includes(query)) ||
+          (e.refNo && e.refNo.toString().toLowerCase().includes(query)) ||
           (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
           (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
-          e.name.toLowerCase().includes(query) ||
-          e.dept.toLowerCase().includes(query) ||
-          e.desc.toLowerCase().includes(query) ||
-          (e.catCode && e.catCode.toLowerCase().includes(query)) ||
-          (e.date && e.date.toLowerCase().includes(query))
+          (e.name && e.name.toString().toLowerCase().includes(query)) ||
+          (e.dept && e.dept.toString().toLowerCase().includes(query)) ||
+          (e.desc && e.desc.toString().toLowerCase().includes(query)) ||
+          (e.catCode && e.catCode.toString().toLowerCase().includes(query)) ||
+          (e.date && e.date.toString().toLowerCase().includes(query))
         );
       }
 
@@ -2718,16 +2738,16 @@
       // If grouping is enabled and there's a search query, filter groups by keeping the whole group if any entry matches
       if (doGroup && query) {
         groups = groups.filter(g => {
-          return g.entries.some(e => 
-            e.id.toString().toLowerCase().includes(query) ||
-            e.refNo.toString().toLowerCase().includes(query) ||
+          return g.entries.some(e =>
+            (e.id && e.id.toString().toLowerCase().includes(query)) ||
+            (e.refNo && e.refNo.toString().toLowerCase().includes(query)) ||
             (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
             (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
-            e.name.toLowerCase().includes(query) ||
-            e.dept.toLowerCase().includes(query) ||
-            e.desc.toLowerCase().includes(query) ||
-            (e.catCode && e.catCode.toLowerCase().includes(query)) ||
-            (e.date && e.date.toLowerCase().includes(query))
+            (e.name && e.name.toString().toLowerCase().includes(query)) ||
+            (e.dept && e.dept.toString().toLowerCase().includes(query)) ||
+            (e.desc && e.desc.toString().toLowerCase().includes(query)) ||
+            (e.catCode && e.catCode.toString().toLowerCase().includes(query)) ||
+            (e.date && e.date.toString().toLowerCase().includes(query))
           );
         });
       }
@@ -2744,7 +2764,7 @@
           <td onclick="selectFromTable('${e.id}')"><b>${e.name}</b></td>
           <td onclick="selectFromTable('${e.id}')">${e.dept}</td>
           <td style="min-width:350px;" onclick="selectFromTable('${e.id}')">
-            ${(e.type && e.type.toString().toUpperCase() === 'PO') ? '<span class="status-tag status-po" style="font-size:9px; padding:1px 4px; margin-right:4px;">PO</span>' : ''}
+            ${((e.type && e.type.toString().toUpperCase() === 'PO') || (e.colF && e.colF.toString().toUpperCase() === 'PO')) ? '<span class="status-tag status-po" style="font-size:9px; padding:1px 4px; margin-right:4px;">PO</span>' : ''}
             ${e.desc}
           </td>
           <td class="amt-col" style="color:var(--primary-dark)" onclick="selectFromTable('${e.id}')">${Number(e.amount || 0).toLocaleString()}</td>
@@ -2759,6 +2779,7 @@
               <div style="font-size:10px; font-weight:600; color:var(--text-main);">${e.colF || '-'}</div>
             ` : `
               <span class="status-tag status-pending" style="font-size:9px; padding:2px 4px; border-radius:4px;">ยังไม่ตัดยอด</span>
+              ${e.colF && e.colF.toString().trim().toUpperCase() === 'PO' ? `<br><div style="font-size:10px; font-weight:600; color:var(--text-main); margin-top:4px;">PO</div>` : ''}
             `)}
           </td>
         </tr>
@@ -2767,21 +2788,21 @@
       if (doGroup) {
         tbody.innerHTML = groups.length > 0 ? groups.map(g => {
           const groupTotal = g.entries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-          
+
           let matchedEntries = [];
           let relatedEntries = [];
-          
+
           if (query) {
             g.entries.forEach(e => {
-              const isMatch = e.id.toString().toLowerCase().includes(query) ||
-                              e.refNo.toString().toLowerCase().includes(query) ||
-                              (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
-                              (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
-                              e.name.toLowerCase().includes(query) ||
-                              e.dept.toLowerCase().includes(query) ||
-                              e.desc.toLowerCase().includes(query) ||
-                              (e.catCode && e.catCode.toLowerCase().includes(query)) ||
-                              (e.date && e.date.toLowerCase().includes(query));
+              const isMatch = (e.id && e.id.toString().toLowerCase().includes(query)) ||
+                (e.refNo && e.refNo.toString().toLowerCase().includes(query)) ||
+                (e.liquidateRefNo && e.liquidateRefNo.toString().toLowerCase().includes(query)) ||
+                (e.colF && e.colF.toString().toLowerCase().includes(query)) ||
+                (e.name && e.name.toString().toLowerCase().includes(query)) ||
+                (e.dept && e.dept.toString().toLowerCase().includes(query)) ||
+                (e.desc && e.desc.toString().toLowerCase().includes(query)) ||
+                (e.catCode && e.catCode.toString().toLowerCase().includes(query)) ||
+                (e.date && e.date.toString().toLowerCase().includes(query));
               if (isMatch) matchedEntries.push(e);
               else relatedEntries.push(e);
             });
@@ -2839,7 +2860,7 @@
       const e = cache.entries.find(x => x.id == id);
       document.getElementById('actionIdDisplay').innerText = '#' + id;
 
-      const isLiquidated = e && e.colF && e.colF.toString().trim() !== "";
+      const isLiquidated = e && e.colF && e.colF.toString().trim() !== "" && e.colF.toString().trim().toUpperCase() !== "PO";
 
       // Control Action Visibility
       document.getElementById('btn-deduct').style.display = isLiquidated ? 'none' : 'flex';

@@ -250,6 +250,7 @@ function budget_submitDeduct(data, planKey) {
     sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
     sheet.getRange(nr, 3).setValue(new Date()); 
     if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+    if (data.desc) sheet.getRange(nr, 13).setValue(data.desc);
     const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
     for (let c = 13; c < pVals.length; c++) {
       if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
@@ -268,6 +269,7 @@ function budget_submitDeduct(data, planKey) {
     if (currentLiqStr === '2025-10-28T17:00:00.000Z' || currentLiqStr === '69-05-00033') throw new Error("รายการนี้ถูกตัดยอดแล้ว (Locked: 69-05-00033)");
 
     if (data.name) sheet.getRange(target, 9).setValue(data.name);
+    if (data.desc) sheet.getRange(target, 13).setValue(data.desc);
     if (data.colF) sheet.getRange(target, 6).setValue(data.colF);
     sheet.getRange(target, 3).setValue(new Date()); 
     sheet.getRange(target, 4).setValue(data.liquidateRefNo);
@@ -315,6 +317,7 @@ function budget_submitOffset(data, planKey) {
   sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
   sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+  if (data.desc) sheet.getRange(nr, 13).setValue(data.desc);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
   for (let c = 13; c < pVals.length; c++) {
     if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
@@ -413,6 +416,7 @@ function budget_submitDeductAdd(data, planKey) {
   sheet.getRange(nr, 8).setValue(data.liquidateLetterDate); // Set new date in Column H
   sheet.getRange(nr, 3).setValue(new Date()); 
   if (data.name) sheet.getRange(nr, 9).setValue(data.name);
+  if (data.desc) sheet.getRange(nr, 13).setValue(data.desc);
   const pVals = sheet.getRange(pIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
   for (let c = 13; c < pVals.length; c++) {
     if (sheet.getRange(2, c+1).getValue() && pVals[c] !== "" && typeof pVals[c] === 'number') {
