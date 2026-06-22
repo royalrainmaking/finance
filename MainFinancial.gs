@@ -30,6 +30,7 @@ function doPost(e) {
     else if (action === 'submitUpdate') res = budget_submitUpdate(params.data, planKey);
     else if (action === 'submitCancel') res = budget_submitCancel(params.data, planKey);
     else if (action === 'submitReserveAndDeduct') res = budget_submitReserveAndDeduct(params.data, planKey);
+    else if (action === 'submitUpdateDD') res = budget_submitUpdateDD(params.data, planKey);
 
 
     return ContentService.createTextOutput(JSON.stringify(res || { error: 'Action not found' })).setMimeType(ContentService.MimeType.JSON);
@@ -189,7 +190,8 @@ function budget_getInitialData(planKey) {
       col, 
       colF: budget_formatThaiDate(row[5]), 
       colE: budget_formatThaiDate(row[4]), 
-      liquidateRefNo: liqRef 
+      liquidateRefNo: liqRef,
+      colDD: row.length > ((planKey === '2.1 บินสาธาฯ') ? 38 : 107) ? row[((planKey === '2.1 บินสาธาฯ') ? 38 : 107)] : ""
     };
   }).reverse();
   return { entries, todayThai: budget_formatThaiDate(new Date()) };
@@ -347,6 +349,10 @@ function budget_submitUpdate(data, planKey) {
     if (data.amount !== undefined) sheet.getRange(target, baseCol).setValue(data.amount === "" ? "" : parseFloat(data.amount));
     if (data.amountDeduct !== undefined) sheet.getRange(target, baseCol + 1).setValue(data.amountDeduct === "" ? "" : parseFloat(data.amountDeduct));
   }
+  if (data.colDD !== undefined) {
+    const ddColIndex = (planKey === '2.1 บินสาธาฯ') ? 39 : 108;
+    sheet.getRange(target, ddColIndex).setValue(data.colDD || "");
+  }
   budget_applyFormulas(sheet, target);
   return { success: true };
 }
@@ -496,4 +502,20 @@ function budget_submitReserveAndDeduct(data, planKey) {
   
   budget_applyFormulas(sheet, nr);
   return { success: true, id: nextId };
+}
+
+function budget_submitUpdateDD(data, planKey) {
+  const sheet = budget_getTargetSheet(planKey);
+  const lastRow = sheet.getLastRow();
+  const ids = sheet.getRange(5, 1, Math.max(1, lastRow - 4), 1).getValues();
+  let target = -1; 
+  for (let i = 0; i < ids.length; i++) {
+    if (ids[i][0] == data.id) { target = i + 5; break; }
+  }
+  if (target === -1) throw new Error("ID not found");
+  
+  const colIndex = (planKey === '2.1 บินสาธาฯ') ? 39 : 108;
+  sheet.getRange(target, colIndex).setValue(data.colDD || "");
+  
+  return { success: true };
 }
