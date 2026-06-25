@@ -1192,10 +1192,12 @@
         <span class="material-symbols-outlined">manage_search</span>
         <span>ค้นหา & จัดการ</span>
       </div>
-      <div class="nav-item" id="nav-gf" onclick="setView('gf', this)">
-        <span class="material-symbols-outlined">auto_fix</span>
-        <span>ระบบ GF อัตโนมัติ</span>
-      </div>
+      <a href="GF_Index.html" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="nav-item">
+          <span class="material-symbols-outlined">open_in_new</span>
+          <span>เปิดหน้าจอ GF แสตนอะโลน</span>
+        </div>
+      </a>
     </nav>
 
     <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display:none;">
@@ -1833,25 +1835,9 @@
 
       <!-- GF AUTOMATIC -->
       <div id="view-gf" class="app-view">
-        <div class="gf-grid">
-          <a href="https://script.google.com/macros/s/AKfycbyv_xdhlDo0bhWRyiuRfet7M1WS3DdU2t7rNDOtTrk5j0hJs3OFe0HuLjyHxw4EEr0V/exec"
-            target="_blank" class="gf-card">
-            <span class="material-symbols-outlined">cloud_sync</span>
-            <h3>1. แผนปฏิบัติการฝนหลวง</h3>
-            <p>ระบบสร้างไฟล์ GF สำหรับภารกิจปฏิบัติการฝนหลวง</p>
-          </a>
-          <a href="https://script.google.com/macros/s/AKfycbyDDGn6kdHdDB_dzSQ320GU2MoD2LTTKBB5TwygqAZq5LbdleTp9NtyC7fr57qoMhE/exec"
-            target="_blank" class="gf-card">
-            <span class="material-symbols-outlined">flight_takeoff</span>
-            <h3>2. แผนงานบริการด้านการบิน</h3>
-            <p>ระบบสร้างไฟล์ GF สำหรับภารกิจส่วนกลางและบริการด้านการบิน</p>
-          </a>
-          <a href="https://script.google.com/macros/s/AKfycbyfzazYFCH30Q_NMUOr1FLAGn97yidRa4bgNIeiuioBS8oRWBDjVhszW5pDqbZMfaUm/exec"
-            target="_blank" class="gf-card">
-            <span class="material-symbols-outlined">masks</span>
-            <h3>3. แผนปฏิบัติการแก้ปัญหาฝุ่นละออง</h3>
-            <p>ระบบสร้างไฟล์ GF สำหรับภารกิจดัดแปรสภาพอากาศแก้ปัญหาฝุ่น</p>
-          </a>
+        <div class="card"
+          style="height: calc(100vh - 120px); padding: 0; overflow: hidden; display: flex; flex-direction: column; background: white; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+          <iframe id="gfIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
       </div>
 
@@ -1860,7 +1846,7 @@
   </main>
 
   <script>
-    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbyyj54PW0MkRRDKiHQXrDiKIrHwkbGLKHk0ItV8sFpkWFxfpz-UQy_cdq9De5UnUEhq/exec';
+    let API = localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbynhALeJDRtsRjI3Hf0BzxTpYauhea-DOJiOiZKi1URvwYXP5DOZLQKk7bwQGNPwcwK/exec';
     let currentPlan = null;
     let cache = null;
     let excludedSpendingItems = new Set();
@@ -2132,10 +2118,7 @@
         if (backBtn) backBtn.style.display = (v === 'table' ? 'none' : 'flex');
       }
 
-      // Special case for GF
-      if (v === 'gf') {
-        if (planBar) planBar.style.display = 'none';
-      }
+
 
       const titleSpan = el.querySelector('span:not(.material-symbols-outlined)');
       if (titleSpan) document.getElementById('viewTitle').innerText = titleSpan.innerText;

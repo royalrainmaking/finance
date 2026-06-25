@@ -1,0 +1,421 @@
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('เครื่องมืออัพเดทข้อมูลจาก Excel ไปยัง Google Sheet')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+}
+
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('เครื่องมืออัพเดทข้อมูล Excel')
+      .addItem('เปิดเครื่องมืออัพเดทข้อมูล', 'showDialog')
+      .addToUi();
+}
+
+function showDialog() {
+  var html = HtmlService.createHtmlOutputFromFile('Index')
+      .setWidth(800)
+      .setHeight(600)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  SpreadsheetApp.getUi().showModalDialog(html, 'เครื่องมืออัพเดทข้อมูลจาก Excel ไปยัง Google Sheet');
+}
+
+function getSheetData(spreadsheetId, sheetName) {
+  try {
+    Logger.log("Getting sheet data for spreadsheetId: " + spreadsheetId + ", sheetName: " + sheetName);
+    
+    if (!spreadsheetId) {
+      Logger.log("No spreadsheetId provided, using default");
+      spreadsheetId = "1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc";
+    }
+    
+    var ss;
+    try {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+      if (!ss) {
+        Logger.log("No active spreadsheet, opening by ID: " + spreadsheetId);
+        ss = SpreadsheetApp.openById(spreadsheetId);
+      }
+    } catch (e) {
+      Logger.log("Error getting active spreadsheet: " + e + ". Trying to open by ID: " + spreadsheetId);
+      ss = SpreadsheetApp.openById(spreadsheetId);
+    }
+    
+    if (!ss) {
+      throw new Error("Could not access any spreadsheet");
+    }
+    
+    if (!sheetName) {
+      Logger.log("No sheetName provided, using default");
+      sheetName = "2.บิน";
+    }
+    
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      var availableSheets = ss.getSheets().map(s => s.getName()).join(", ");
+      Logger.log("Sheet '" + sheetName + "' not found. Available sheets: " + availableSheets);
+      
+      sheet = ss.getSheets()[0];
+      if (!sheet) {
+        throw new Error("ไม่พบชีทใดๆ ในสเปรดชีท");
+      }
+      
+      Logger.log("Using first sheet instead: " + sheet.getName());
+    }
+    
+    var range = sheet.getDataRange();
+    var values = range.getValues();
+    
+    if (!values || values.length === 0) {
+      Logger.log("No data found in sheet");
+      throw new Error("ไม่พบข้อมูลในชีท");
+    }
+    
+    Logger.log("Successfully retrieved " + values.length + " rows from sheet " + sheet.getName());
+    
+    return JSON.stringify(values);
+  } catch(error) {
+    Logger.log("Error in getSheetData: " + error);
+    throw new Error("Failed to get sheet data: " + error.message);
+  }
+}
+
+function updateSheetData(updates, config) {
+  try {
+    var updatesArray = JSON.parse(updates);
+    var configObj = JSON.parse(config);
+    
+    var spreadsheetId = configObj.spreadsheetId || "1ZyRiEFjIDJAW5-26ZyYO_L8Ipk55ImzVtSe33vDYKms";
+    var sheetName = configObj.sheetName || "GF กิจสนับสนุน";
+    var updateColumnLetter = configObj.updateColumn || "C";
+    
+    var updateColumnIndex = 0;
+    updateColumnLetter = updateColumnLetter.toUpperCase();
+    for (var i = 0; i < updateColumnLetter.length; i++) {
+      updateColumnIndex = updateColumnIndex * 26 + (updateColumnLetter.charCodeAt(i) - 64);
+    }
+    
+    var ss;
+    try {
+      ss = SpreadsheetApp.getActiveSpreadsheet();
+      if (!ss) {
+        ss = SpreadsheetApp.openById(spreadsheetId);
+      }
+    } catch (e) {
+      ss = SpreadsheetApp.openById(spreadsheetId);
+    }
+    
+    if (!ss) {
+      throw new Error("Could not access any spreadsheet");
+    }
+    
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.getSheetByName("Sheet1");
+      if (!sheet) {
+        sheet = ss.getActiveSheet();
+        if (!sheet) {
+          throw new Error("Could not find any valid sheet to update");
+        }
+      }
+    }
+    
+    var count = 0;
+    var skippedCount = 0;
+    
+    Logger.log("Received " + updatesArray.length + " updates to process");
+    Logger.log("Using column " + updateColumnLetter + " (index " + updateColumnIndex + ") for updates");
+    
+    for (var i = 0; i < updatesArray.length; i++) {
+      var update = updatesArray[i];
+      var cell = sheet.getRange(update.row, updateColumnIndex);
+      var currentValue = cell.getValue();
+      
+      if (currentValue === "" || currentValue === 0 || currentValue === "0") {
+        cell.setValue(update.value);
+        count++;
+        Logger.log("Updated row " + update.row + " with value: " + update.value + " (from column " + (update.sourceColumn || "unknown") + ")");
+      } else {
+        skippedCount++;
+        Logger.log("Skipped row " + update.row + " because it already has value: " + currentValue);
+      }
+    }
+    
+    var message = "ดำเนินการเสร็จสิ้น อัพเดทข้อมูลแล้ว " + count + " แถว";
+    if (skippedCount > 0) {
+      message += " ข้ามไป " + skippedCount + " แถว เนื่องจากมีค่าอยู่แล้ว (ไม่ใช่ 0 หรือว่างเปล่า)";
+    }
+    
+    var duplicateCount = 0;
+    var matchMap = {};
+    
+    for (var i = 0; i < updatesArray.length; i++) {
+      var matchValue = updatesArray[i].matchValue;
+      if (matchValue) {
+        if (!matchMap[matchValue]) {
+          matchMap[matchValue] = 1;
+        } else {
+          matchMap[matchValue]++;
+          if (matchMap[matchValue] === 2) {
+            duplicateCount++;
+          }
+        }
+      }
+    }
+    
+    if (duplicateCount > 0) {
+      message += " พบค่าซ้ำ " + duplicateCount + " รายการในคอลัมน์ " + configObj.updateColumn;
+    }
+    
+    Logger.log(message);
+    
+    var columnFCount = 0;
+    for (var i = 0; i < updatesArray.length; i++) {
+      if (updatesArray[i].sourceColumn === configObj.alternativeColumn) {
+        columnFCount++;
+      }
+    }
+    
+    return {
+      success: true,
+      message: message,
+      updatedCount: count,
+      skippedCount: skippedCount,
+      duplicateCount: duplicateCount,
+      columnFCount: columnFCount
+    };
+  } catch(error) {
+    Logger.log("Error in updateSheetData: " + error);
+    return {
+      success: false,
+      message: "Error: " + error.toString()
+    };
+  }
+}
+
+function compareValuesForSearch(val1, val2) {
+  if (!val1 || !val2) return false;
+  
+  var str1 = String(val1).trim();
+  var str2 = String(val2).trim();
+  
+  if (str1 === str2) return true;
+  
+  if (str1.toLowerCase() === str2.toLowerCase()) return true;
+  
+  if (str1.replace(/\s+/g, '') === str2.replace(/\s+/g, '')) return true;
+  
+  if (!isNaN(str1) && !isNaN(str2)) {
+    return parseFloat(str1) === parseFloat(str2);
+  }
+  
+  return false;
+}
+
+function searchAmounts(excelDataStr, configStr) {
+  try {
+    var excelData = JSON.parse(excelDataStr);
+    var config = JSON.parse(configStr);
+    
+    Logger.log("searchAmounts called with " + excelData.length + " rows");
+    
+    var spreadsheetId = config.spreadsheetId;
+    var sheetName = config.sheetName;
+    
+    if (!spreadsheetId || !sheetName) {
+      return {
+        success: false,
+        message: "กรุณาระบุ Spreadsheet ID และชื่อชีท"
+      };
+    }
+    
+    var ss = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      return {
+        success: false,
+        message: "ไม่พบชีท: " + sheetName
+      };
+    }
+    
+    var range = sheet.getDataRange();
+    var sheetValues = range.getValues();
+    Logger.log("Sheet has " + sheetValues.length + " rows");
+    
+    var matchedItems = [];
+    var unmatchedItems = [];
+    var totalChecked = 0;
+    
+    for (var i = 0; i < excelData.length; i++) {
+      var excelRow = excelData[i];
+      
+      if (!excelRow || !Array.isArray(excelRow)) {
+        continue;
+      }
+      
+      var excelColumnA = excelRow[0];
+      var excelColumnG = excelRow.length > 6 ? parseFloat(excelRow[6]) : null;
+      excelColumnG = (excelColumnG && !isNaN(excelColumnG)) ? excelColumnG : null;
+      
+      if (!excelColumnA || excelColumnA === '') {
+        continue;
+      }
+      
+      if (excelColumnG === null) {
+        continue;
+      }
+      
+      totalChecked++;
+      
+      var matchingRows = [];
+      var sheetSum = 0;
+      
+      for (var j = 10; j < sheetValues.length; j++) {
+        var sheetRow = sheetValues[j];
+        
+        if (!sheetRow || sheetRow.length < 6) continue;
+        
+        var columnF = sheetRow[5];
+        var columnB = sheetRow[1] || '';
+        var columnDB = sheetRow.length > 104 ? parseFloat(sheetRow[104]) : 0;
+        columnDB = columnDB || 0;
+        
+        if (compareValuesForSearch(excelColumnA, columnF)) {
+          matchingRows.push({
+            rowIndex: j + 1,
+            columnF: columnF,
+            columnB: columnB,
+            columnDB: columnDB
+          });
+          sheetSum += columnDB;
+        }
+      }
+      
+      if (matchingRows.length === 0) {
+        var item = {
+          excelRowA: excelColumnA,
+          excelRowNumber: i + 1,
+          excelColumnCZ: excelColumnG,
+          matchingRowsCount: 0,
+          noMatch: true
+        };
+        unmatchedItems.push(item);
+      } else if (excelColumnG === sheetSum) {
+        var item = {
+          excelRowA: excelColumnA,
+          excelRowNumber: i + 1,
+          excelColumnCZ: excelColumnG,
+          matchingRowsCount: matchingRows.length,
+          sheetSum: sheetSum,
+          matchingRows: matchingRows
+        };
+        matchedItems.push(item);
+      } else {
+        var item = {
+          excelRowA: excelColumnA,
+          excelRowNumber: i + 1,
+          excelColumnCZ: excelColumnG,
+          matchingRowsCount: matchingRows.length,
+          sheetSum: sheetSum,
+          difference: excelColumnG - sheetSum,
+          matchingRows: matchingRows
+        };
+        unmatchedItems.push(item);
+      }
+    }
+    
+    return {
+      success: true,
+      results: {
+        totalChecked: totalChecked,
+        matched: matchedItems.length,
+        unmatched: unmatchedItems.length,
+        matchedItems: matchedItems,
+        unmatchedItems: unmatchedItems
+      }
+    };
+    
+  } catch(error) {
+    Logger.log("Error in searchAmounts: " + error);
+    return {
+      success: false,
+      message: "Error: " + error.toString()
+    };
+  }
+}
+
+function findBalance(searchValue, spreadsheetId, sheetName) {
+  try {
+    if (!searchValue) {
+      return {
+        success: false,
+        message: "กรุณาระบุค่าที่ต้องการค้นหา"
+      };
+    }
+    
+    spreadsheetId = spreadsheetId || "1ZyRiEFjIDJAW5-26ZyYO_L8Ipk55ImzVtSe33vDYKms";
+    sheetName = sheetName || "GF กิจสนับสนุน";
+    
+    var ss = SpreadsheetApp.openById(spreadsheetId);
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      throw new Error("ไม่พบชีท: " + sheetName);
+    }
+    
+    var range = sheet.getDataRange();
+    var values = range.getValues();
+    
+    var results = [];
+    
+    for (var i = 4; i < values.length; i++) {
+      if (values[i] && values[i].length > 3) {
+        var columnD = values[i][3];
+        
+        if (compareValuesForSearch(searchValue, columnD)) {
+          var balance = 0;
+          if (values[i].length > 63) {
+            balance = parseFloat(values[i][63]) || 0;
+          }
+          
+          results.push({
+            rowNumber: i + 1,
+            columnD: columnD,
+            balance: balance
+          });
+        }
+      }
+    }
+    
+    if (results.length === 0) {
+      return {
+        success: false,
+        message: "ไม่พบข้อมูล",
+        searchValue: searchValue
+      };
+    }
+    
+    var totalBalance = 0;
+    for (var j = 0; j < results.length; j++) {
+      totalBalance += results[j].balance;
+    }
+    
+    return {
+      success: true,
+      searchValue: searchValue,
+      matchCount: results.length,
+      totalBalance: totalBalance,
+      details: results
+    };
+    
+  } catch(error) {
+    Logger.log("Error in findBalance: " + error);
+    return {
+      success: false,
+      message: "Error: " + error.toString()
+    };
+  }
+}

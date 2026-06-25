@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เครื่องมืออัพเดทข้อมูล Excel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Sarabun', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+        color: #333;
+        line-height: 1.5;
+        font-size: 14px;
+      }
+      
+      .container {
+        max-width: 800px;
+        margin: 10px auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      }
+      
+      h1 {
+        color: #1a73e8;
+        margin-top: 0;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 20px;
+      }
+      
+      .step {
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        border-left: 3px solid #1a73e8;
+      }
+      
+      .step-header {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #1a73e8;
+        display: flex;
+        align-items: center;
+      }
+      
+      .step-header::before {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background-color: #1a73e8;
+        border-radius: 50%;
+        margin-right: 8px;
+        color: white;
+        text-align: center;
+        line-height: 20px;
+        font-size: 12px;
+      }
+      
+      .step:nth-child(1) .step-header::before { content: '1'; }
+      .step:nth-child(2) .step-header::before { content: '2'; }
+      .step:nth-child(3) .step-header::before { content: '3'; }
+      
+      .file-input {
+        margin: 10px 0;
+        width: 100%;
+        padding: 8px;
+        border: 1px dashed #1a73e8;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+      }
+      
+      button {
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: 'Sarabun', sans-serif;
+      }
+      
+      button:hover {
+        background-color: #0d62d1;
+      }
+      
+      button:disabled {
+        background-color: #dadce0;
+        cursor: not-allowed;
+      }
+      
+      .status {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+        font-weight: 500;
+        font-size: 13px;
+      }
+      
+      .progress {
+        background-color: #e8f0fe;
+        border-left: 3px solid #1a73e8;
+      }
+      
+      .success {
+        background-color: #e6f4ea;
+        border-left: 3px solid #34a853;
+      }
+      
+      .error {
+        background-color: #fce8e6;
+        border-left: 3px solid #ea4335;
+      }
+      
+      #progressBar {
+        width: 100%;
+        height: 6px;
+        background-color: #e8eaed;
+        border-radius: 3px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+      
+      #progressBarFill {
+        height: 100%;
+        background-color: #1a73e8;
+        border-radius: 3px;
+        width: 0%;
+        transition: width 0.3s ease-in-out;
+      }
+      
+      .result-stats {
+        margin-top: 15px;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        font-size: 13px;
+      }
+      
+      .stat-item {
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #e8eaed;
+        padding-bottom: 5px;
+      }
+      
+      .stat-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+      
+      .stat-value {
+        font-weight: 600;
+        color: #1a73e8;
+      }
+      
+      .form-group {
+        margin-bottom: 10px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 3px;
+        font-weight: 500;
+        font-size: 13px;
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 13px;
+      }
+      
+      .form-control:focus {
+        border-color: #1a73e8;
+        outline: none;
+      }
+      
+      select.form-control {
+        padding: 8px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+      }
+      
+      select.form-control:hover {
+        background-color: #f1f3f4;
+      }
+      
+      .preset-field {
+        background-color: #e8f0fe;
+        border-color: #a5c7fe;
+        color: #1a73e8;
+        font-weight: 500;
+      }
+      
+      .preset-field:focus {
+        background-color: #e8f0fe;
+      }
+      
+      .preset-card {
+        border-left: 3px solid #34a853;
+        background-color: #f8fdf9;
+      }
+      
+      .preset-card .card-header {
+        color: #34a853;
+        border-bottom-color: #c6e7c6;
+      }
+      
+      .preset-info {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #5f6368;
+        background-color: #f1f8f1;
+        padding: 8px;
+        border-radius: 4px;
+        border-left: 2px solid #34a853;
+      }
+      
+      .preset-info p {
+        margin: 0;
+      }
+      
+      .column-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+      }
+      
+      .card {
+        background-color: #fff;
+        border-radius: 4px;
+        padding: 10px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        margin-bottom: 10px;
+      }
+      
+      .card-header {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #1a73e8;
+        border-bottom: 1px solid #e8eaed;
+        padding-bottom: 5px;
+        font-size: 14px;
+      }
+      
+      .radio-group {
+        margin-top: 5px;
+      }
+      
+      .radio-group label {
+        display: block;
+        margin-bottom: 5px;
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+      
+      .radio-group label:hover {
+        background-color: #f1f3f4;
+      }
+      
+      .radio-group input[type="radio"] {
+        margin-right: 5px;
+      }
+      
+      .radio-group input[type="radio"]:checked + span {
+        font-weight: 600;
+        color: #1a73e8;
+      }
+      
+      .column-input {
+        width: 50px;
+        text-align: center;
+      }
+      
+      /* Confirmation dialog styles */
+      #confirmationDialog {
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+      }
+      
+      #confirmationDialog > div {
+        background-color: white;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        font-size: 13px;
+      }
+      
+      #confirmationDialog h3 {
+        margin-top: 0;
+        color: #1a73e8;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      #previewTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      
+      #previewTable th {
+        background-color: #f1f3f4;
+        padding: 6px 8px;
+        text-align: left;
+        font-weight: 600;
+      }
+      
+      #previewTable td {
+        padding: 5px 8px;
+        border-bottom: 1px solid #e8eaed;
+      }
+      
+      #cancelUpdateBtn {
+        background-color: #ea4335;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      #cancelUpdateBtn:hover {
+        background-color: #d33426;
+      }
+      
+      #confirmUpdateBtn {
+        background-color: #34a853;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      #confirmUpdateBtn:hover {
+        background-color: #2d9249;
+      }
+      
+      #searchAmountButton {
+        background-color: #34a853 !important;
+        color: white !important;
+      }
+      
+      #searchAmountButton:hover {
+        background-color: #2d9249 !important;
+      }
+      
+      #searchAmountButton:disabled {
+        background-color: #dadce0 !important;
+        color: #5f6368 !important;
+        cursor: not-allowed !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>เครื่องมืออัพเดทข้อมูลจาก Excel ไปยัง Google Sheet</h1>
+      
+      <div class="step">
+        <div class="step-header">ขั้นตอนที่ 1: เลือกไฟล์ Excel หรือ HTML</div>
+        <input type="file" id="excelFile" accept=".xlsx, .xls, .html, .htm" class="file-input">
+        <small style="display: block; margin-top: 5px; color: #666; font-size: 12px;">รองรับไฟล์ Excel (.xlsx, .xls) และไฟล์ HTML ที่มีตาราง (.html, .htm)</small>
+      </div>
+      
+      <div class="step">
+        <div class="step-header">ขั้นตอนที่ 2: ตั้งค่าการจับคู่</div>
+        
+        
+          <div class="form-group">
+            <select id="presetSelector" class="form-control">
+              <option value="custom">กำหนดเอง</option>
+              <option value="1.ฝนหลวง">1.ฝนหลวง</option>
+              <option value="2.ด้านการบิน">2.ด้านการบิน</option>
+              <option value="2.1 บินสาธาฯ">2.1 บินสาธาฯ</option>
+              <option value="3.แก้ปัญหาฝุ่น">3.แก้ปัญหาฝุ่น</option>
+              <option value="4.บรรเทาลูกเห็บ">4.บรรเทาลูกเห็บ</option>
+            </select>
+          </div>
+          <div class="preset-info">
+            <p></p>
+          </div>
+
+        
+        <div class="card">
+          <div class="card-header">ตั้งค่า Google Sheet</div>
+          <div class="form-group">
+            <label for="spreadsheetId">ลิงก์ Google Sheet หรือ ID:</label>
+            <input type="text" id="spreadsheetId" value="1ZyRiEFjIDJAW5-26ZyYO_L8Ipk55ImzVtSe33vDYKms" class="form-control" placeholder="วางลิงก์หรือ ID ที่นี่">
+            <small style="display: block; margin-top: 3px; color: #666; font-size: 11px;">สามารถวางลิงก์แบบเต็มได้</small>
+          </div>
+          <div class="form-group">
+            <label for="sheetName">ชื่อชีท:</label>
+            <input type="text" id="sheetName" value="GF กิจสนับสนุน" class="form-control">
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">การจับคู่คอลัมน์</div>
+          <div class="column-grid">
+            <div>
+              <p style="font-weight: 500; margin-bottom: 5px; font-size: 13px;">คอลัมน์ใน Excel:</p>
+              <div class="form-group">
+                <label for="excelMatchColumn">คอลัมน์จับคู่:</label>
+                <input type="text" id="excelMatchColumn" value="A" class="form-control column-input">
+              </div>
+              <div class="form-group">
+                <label for="excelValueColumn1">คอลัมน์ค่าทางเลือก:</label>
+                <input type="text" id="excelValueColumn1" value="F" class="form-control column-input">
+              </div>
+              <div class="form-group">
+                <label for="excelNegativeColumn">คอลัมน์ตรวจค่าติดลบ:</label>
+                <input type="text" id="excelNegativeColumn" value="G" class="form-control column-input">
+              </div>
+              <div class="form-group">
+                <label for="excelValueColumn2">คอลัมน์ค่าหลัก:</label>
+                <input type="text" id="excelValueColumn2" value="H" class="form-control column-input">
+              </div>
+            </div>
+            
+            <div>
+              <p style="font-weight: 500; margin-bottom: 5px; font-size: 13px;">คอลัมน์ใน Google Sheet:</p>
+              <div class="form-group">
+                <label for="sheetMatchColumn">คอลัมน์จับคู่:</label>
+                <input type="text" id="sheetMatchColumn" value="D" class="form-control column-input">
+              </div>
+              <div class="form-group">
+                <label for="sheetUpdateColumn">คอลัมน์ที่ต้องการอัพเดท:</label>
+                <input type="text" id="sheetUpdateColumn" value="C" class="form-control column-input">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Excel starting row selection removed - always starts from row 1 -->
+        <input type="hidden" id="customStartRow" value="1">
+        <input type="hidden" name="startRow" value="1" checked>
+        
+        <div class="card">
+          <div class="card-header">วิธีการเปรียบเทียบ</div>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="comparisonMethod" value="exact"> 
+              <span>เปรียบเทียบแบบตรงตัว</span>
+            </label>
+            <label>
+              <input type="radio" name="comparisonMethod" value="numeric"> 
+              <span>เปรียบเทียบแบบข้อความ (ข้ามค่าว่าง)</span>
+            </label>
+            <label>
+              <input type="radio" name="comparisonMethod" value="caseInsensitive"> 
+              <span>ไม่สนใจตัวพิมพ์ใหญ่-เล็ก</span>
+            </label>
+            <label>
+              <input type="radio" name="comparisonMethod" value="ignoreSpaces"> 
+              <span>ไม่สนใจช่องว่าง</span>
+            </label>
+            <label>
+              <input type="radio" name="comparisonMethod" value="all" checked> 
+              <span>ลองทุกวิธี (แนะนำ)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="step">
+        <div class="step-header">ขั้นตอนที่ 3: ประมวลผล</div>
+        <p style="font-size: 13px; margin: 5px 0;"><strong>ประมวลผลไฟล์:</strong> อัพเดทข้อมูลจาก Excel ไปยัง Google Sheet โดย:</p>
+        <ul style="font-size: 13px; margin: 5px 0 10px 20px; padding: 0;">
+          <li>จับคู่ข้อมูลระหว่างคอลัมน์ที่ระบุ</li>
+          <li>ใช้คอลัมน์ค่าทางเลือกเมื่อคอลัมน์ตรวจค่าติดลบเป็นลบและคอลัมน์ค่าหลักว่างเปล่า</li>
+          <li>อัพเดทเฉพาะเซลล์ที่มีค่าเป็น 0 หรือว่างเปล่าเท่านั้น</li>
+        </ul>
+        
+        <p style="font-size: 13px; margin: 15px 0 5px 0;"><strong>ค้นหายอดเงิน:</strong> เปรียบเทียบยอดเงินระหว่าง Excel และ Google Sheet โดย:</p>
+        <ul style="font-size: 13px; margin: 5px 0 10px 20px; padding: 0;">
+          <li>ใช้คอลัมน์ A ของ Excel เทียบกับคอลัมน์ D ของ Google Sheet</li>
+          <li>เริ่มตรวจสอบจากแถวที่ 5 ของ Google Sheet</li>
+          <li>ข้ามแถวที่คอลัมน์ B เป็น "โอน"</li>
+          <li>ตรวจสอบคอลัมน์ G ถ้าไม่เป็นค่าว่าง ใช้ค่าในคอลัมน์ G เทียบกับคอลัมน์ BL</li>
+          <li>รวมยอดเงินสำหรับรายการที่ซ้ำกันในคอลัมน์ D</li>
+          <li>แสดงรายละเอียดรายการที่ตรงกันและไม่ตรงกัน</li>
+        </ul>
+        <button id="processButton" disabled>ประมวลผลไฟล์</button>
+        <button id="searchAmountButton" disabled style="margin-left: 10px; background-color: #34a853; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">ค้นหายอดเงิน</button>
+      </div>
+      
+      <div id="statusMessage" class="status"></div>
+      <div id="progressBar" style="display: none;">
+        <div id="progressBarFill"></div>
+      </div>
+      
+      <!-- Confirmation dialog -->
+      <div id="confirmationDialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background-color: white; max-width: 450px; margin: 50px auto; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+          <h3 style="margin-top: 0; font-size: 16px; color: #1a73e8;">ยืนยันการอัพเดท</h3>
+          <p style="font-size: 13px; margin: 5px 0 10px 0;">ตรวจสอบข้อมูลที่จะอัพเดท:</p>
+          
+          <div class="stat-item">
+            <span>จำนวนการจับคู่:</span>
+            <span id="confirmMatchesFound" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span>พบค่าซ้ำ:</span>
+            <span id="confirmDuplicatesFound" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span>ค่าจากคอลัมน์ทางเลือก:</span>
+            <span id="confirmColumnFCount" class="stat-value">0</span>
+          </div>
+          
+          <div style="max-height: 180px; overflow-y: auto; margin: 10px 0; border: 1px solid #eee; padding: 5px; border-radius: 4px;">
+            <table id="previewTable" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr style="background-color: #f5f5f5;">
+                  <th style="padding: 6px; text-align: left; border-bottom: 1px solid #ddd;">แถว</th>
+                  <th style="padding: 6px; text-align: left; border-bottom: 1px solid #ddd;">ค่าใหม่</th>
+                </tr>
+              </thead>
+              <tbody id="previewTableBody">
+                <!-- Preview data will be inserted here -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div style="text-align: right; margin-top: 10px;">
+            <button id="cancelUpdateBtn" style="margin-right: 8px;">ยกเลิก</button>
+            <button id="confirmUpdateBtn">ยืนยัน</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Results stats -->
+      <div id="resultStats" class="result-stats" style="display: none;">
+        <div class="stat-item">
+          <span>วิธีเปรียบเทียบที่ใช้:</span>
+          <span id="comparisonMethodUsed" class="stat-value">ทุกวิธี</span>
+        </div>
+        <div class="stat-item">
+          <span>จำนวนการจับคู่:</span>
+          <span id="matchesFound" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>พบค่าซ้ำ:</span>
+          <span id="duplicatesFound" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>ค่าจากคอลัมน์ทางเลือก:</span>
+          <span id="columnFCount" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>อัพเดทสำเร็จ:</span>
+          <span id="updatedCount" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>ข้ามไป (มีค่าแล้ว):</span>
+          <span id="skippedCount" class="stat-value">0</span>
+        </div>
+      </div>
+      
+      <!-- Amount search results -->
+      <div id="amountSearchResults" class="result-stats" style="display: none;">
+        <h3 style="color: #34a853; margin-top: 0; font-size: 16px;">ผลการค้นหายอดเงิน</h3>
+        <div class="stat-item">
+          <span>จำนวนรายการที่ตรวจสอบ:</span>
+          <span id="totalCheckedItems" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>จำนวนรายการที่ตรงกัน:</span>
+          <span id="matchedItems" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span>จำนวนรายการที่ไม่ตรงกัน:</span>
+          <span id="unmatchedItems" class="stat-value">0</span>
+        </div>
+        
+        <!-- Matched items section -->
+        <div id="matchedList" style="margin-top: 15px; display: none;">
+          <h4 style="color: #34a853; font-size: 14px; margin-bottom: 10px;">รายการที่ตรงกัน:</h4>
+          <div id="matchedItemsContainer" style="max-height: 200px; overflow-y: auto; border: 1px solid #e8eaed; border-radius: 4px; padding: 10px; background-color: #f0f9f0;">
+            <!-- Matched items will be displayed here -->
+          </div>
+        </div>
+        
+        <!-- Unmatched items section -->
+        <div id="unmatchedList" style="margin-top: 15px;">
+          <h4 style="color: #ea4335; font-size: 14px; margin-bottom: 10px;">รายการที่ไม่ตรงกัน:</h4>
+          <div id="unmatchedItemsContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #e8eaed; border-radius: 4px; padding: 10px; background-color: #fef7f0;">
+            <!-- Unmatched items will be displayed here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Debug information section removed -->
+    </div>
+    
+    <script>
+      // Standalone execution environment
+      if (typeof google === 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiUrl = urlParams.get('apiUrl') || localStorage.getItem('budgetApiUrl') || 'https://script.google.com/macros/s/AKfycbynhALeJDRtsRjI3Hf0BzxTpYauhea-DOJiOiZKi1URvwYXP5DOZLQKk7bwQGNPwcwK/exec';
+        
+        if (!apiUrl) {
+          console.warn("Running locally without API URL. Functions will not connect to Google Sheets.");
+        } else {
+          console.log("Running standalone via API URL: " + apiUrl);
+        }
+        
+        window.google = {
+          script: {
+            run: {
+              withSuccessHandler: function(cb) { this._success = cb; return this; },
+              withFailureHandler: function(cb) { this._failure = cb; return this; },
+              _execute: function(action, data) {
+                if (!apiUrl) {
+                  setTimeout(() => this._failure && this._failure(new Error("ไม่พบ Backend URL กรุณากลับไปตั้งค่าในหน้าหลักก่อน")), 500);
+                  return this;
+                }
+                
+                fetch(apiUrl, {
+                  method: 'POST',
+                  body: JSON.stringify({ action: action, data: data })
+                })
+                .then(res => res.json())
+                .then(res => {
+                  if (res.error) throw new Error(res.error);
+                  if (this._success) this._success(res.result);
+                })
+                .catch(err => {
+                  if (this._failure) this._failure(err);
+                });
+                return this;
+              },
+              getSheetData: function(spreadsheetId, sheetName) {
+                return this._execute('gf_getSheetData', { spreadsheetId, sheetName });
+              },
+              updateSheetData: function(updates, config) {
+                return this._execute('gf_updateSheetData', { updates, config });
+              },
+              searchAmounts: function(excelDataStr, configStr) {
+                return this._execute('gf_searchAmounts', { excelDataStr, configStr });
+              }
+            }
+          }
+        };
+      }
+      
+      // Global variables
+      let excelData = null;
+      let targetSheetData = null;
+      
+      // DOM elements
+      const fileInput = document.getElementById('excelFile');
+      const processButton = document.getElementById('processButton');
+      const searchAmountButton = document.getElementById('searchAmountButton');
+      const statusMessage = document.getElementById('statusMessage');
+      const progressBar = document.getElementById('progressBar');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const resultStats = document.getElementById('resultStats');
+      
+      // Amount search elements
+      const amountSearchResults = document.getElementById('amountSearchResults');
+      const totalCheckedItemsElement = document.getElementById('totalCheckedItems');
+      const matchedItemsElement = document.getElementById('matchedItems');
+      const unmatchedItemsElement = document.getElementById('unmatchedItems');
+      const matchedList = document.getElementById('matchedList');
+      const matchedItemsContainer = document.getElementById('matchedItemsContainer');
+      const unmatchedItemsContainer = document.getElementById('unmatchedItemsContainer');
+      const matchesFoundElement = document.getElementById('matchesFound');
+      const duplicatesFoundElement = document.getElementById('duplicatesFound');
+      const columnFCountElement = document.getElementById('columnFCount');
+      const confirmColumnFCountElement = document.getElementById('confirmColumnFCount');
+      const updatedCountElement = document.getElementById('updatedCount');
+      const skippedCountElement = document.getElementById('skippedCount');
+      const comparisonMethodUsedElement = document.getElementById('comparisonMethodUsed');
+      
+      // Sheet settings elements
+      const presetSelector = document.getElementById('presetSelector');
+      const spreadsheetIdInput = document.getElementById('spreadsheetId');
+      const sheetNameInput = document.getElementById('sheetName');
+      
+      // Column mapping elements
+      const excelMatchColumnInput = document.getElementById('excelMatchColumn');
+      const excelValueColumn1Input = document.getElementById('excelValueColumn1');
+      const excelNegativeColumnInput = document.getElementById('excelNegativeColumn');
+      const excelValueColumn2Input = document.getElementById('excelValueColumn2');
+      const sheetMatchColumnInput = document.getElementById('sheetMatchColumn');
+      const sheetUpdateColumnInput = document.getElementById('sheetUpdateColumn');
+      
+      // Preset configurations
+      const presets = {
+        '1.ฝนหลวง': {
+          name: "1.ฝนหลวง",
+          spreadsheetId: "1E43wKRlEa1xKM5l_zSDdstmAKPtDgw05rwJVeRLgTYk",
+          sheetName: "1.ฝน",
+          matchColumn: "F",
+          updateColumn: "E"
+        },
+        '2.ด้านการบิน': {
+          name: "2.ด้านการบิน",
+          spreadsheetId: "1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc",
+          sheetName: "2.บิน",
+          matchColumn: "F",
+          updateColumn: "E"
+        },
+        '2.1 บินสาธาฯ': {
+          name: "2.1 บินสาธาฯ",
+          spreadsheetId: "1lwDV6QKiJ0nx4guP6T8BhIMquCmwIqzn-zdVnjYa_hc",
+          sheetName: "2.1 บินสาธาฯ",
+          matchColumn: "F",
+          updateColumn: "E"
+        },
+        '3.แก้ปัญหาฝุ่น': {
+          name: "3.แก้ปัญหาฝุ่น",
+          spreadsheetId: "1iOX9ISvptU2UpMbVNPTuYHbA4df11dytCHxFYKoSQxg",
+          sheetName: "3.ฝุ่น",
+          matchColumn: "F",
+          updateColumn: "E"
+        },
+        '4.บรรเทาลูกเห็บ': {
+          name: "4.บรรเทาลูกเห็บ",
+          spreadsheetId: "1SM0GYznjAKPOQT-itypsk83n7l5rx9ibWzKcLGZb4H4",
+          sheetName: "4.ลูกเห็บ",
+          matchColumn: "F",
+          updateColumn: "E"
+        }
+      };
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        // Read plan from URL params first (standalone mode), fallback to template variable (GAS mode)
+        let initialPlan = new URLSearchParams(window.location.search).get('plan');
+        if (!initialPlan) {
+          const tmplPlan = "<?= typeof initialPlan !== 'undefined' ? initialPlan : '' ?>";
+          if (!tmplPlan.includes('<?=')) {
+            initialPlan = tmplPlan;
+          }
+        }
+        
+        if (initialPlan && presets[initialPlan]) {
+          setTimeout(() => {
+            presetSelector.value = initialPlan;
+            presetSelector.dispatchEvent(new Event('change'));
+          }, 500); // slight delay to let elements initialize
+        }
+      });
+      
+      // Get all radio buttons
+      const comparisonMethodRadios = document.querySelectorAll('input[name="comparisonMethod"]');
+      const customStartRowInput = document.getElementById('customStartRow');
+      
+      // Start row selection removed - always starts from row 1
+      
+      // Function to convert column letter to index (e.g., A -> 0, B -> 1, etc.)
+      function getColumnIndex(columnLetter) {
+        if (!columnLetter || typeof columnLetter !== 'string') {
+          return 0; // Default to first column (A)
+        }
+        
+        columnLetter = columnLetter.toUpperCase();
+        let index = 0;
+        
+        for (let i = 0; i < columnLetter.length; i++) {
+          index = index * 26 + (columnLetter.charCodeAt(i) - 64);
+        }
+        
+        return index - 1; // Convert to 0-indexed
+      }
+      
+      // Function to get the starting row (always returns 1)
+      function getSelectedStartRow() {
+        return 1; // Always start from row 1
+      }
+      
+      // Function to extract Spreadsheet ID from a full Google Sheets URL
+      function extractSpreadsheetId(input) {
+        if (!input) return "";
+        
+        // Check if it's already just an ID (no slashes or spaces)
+        if (!/[\/\s]/.test(input)) {
+          return input;
+        }
+        
+        // Try to extract ID from URL patterns
+        try {
+          // Pattern: /spreadsheets/d/SPREADSHEET_ID/
+          const regex1 = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+          const match1 = input.match(regex1);
+          if (match1 && match1[1]) {
+            return match1[1];
+          }
+          
+          // Pattern: /spreadsheets/d/SPREADSHEET_ID/edit
+          const regex2 = /\/d\/([a-zA-Z0-9-_]+)\/edit/;
+          const match2 = input.match(regex2);
+          if (match2 && match2[1]) {
+            return match2[1];
+          }
+          
+          // Pattern: docs.google.com/spreadsheets/d/SPREADSHEET_ID/
+          const regex3 = /docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+          const match3 = input.match(regex3);
+          if (match3 && match3[1]) {
+            return match3[1];
+          }
+        } catch (e) {
+          console.error("Error extracting spreadsheet ID:", e);
+        }
+        
+        // If no pattern matches, return the original input
+        return input;
+      }
+    </script>
+    
+    <script>
+      // Function to get the selected comparison method name
+      function getSelectedComparisonMethodName() {
+        let selectedMethod = 'all'; // Default
+        for (const radio of comparisonMethodRadios) {
+          if (radio.checked) {
+            selectedMethod = radio.value;
+            break;
+          }
+        }
+        
+        // Return human-readable name
+        switch(selectedMethod) {
+          case 'exact': return 'เปรียบเทียบแบบตรงตัว';
+          case 'numeric': return 'เปรียบเทียบแบบข้อความ (ข้ามค่าว่าง)';
+          case 'caseInsensitive': return 'ไม่สนใจตัวพิมพ์ใหญ่-เล็ก';
+          case 'ignoreSpaces': return 'ไม่สนใจช่องว่าง';
+          case 'all': return 'ทุกวิธี';
+          default: return 'ทุกวิธี';
+        }
+      }
+      
+      // Debug elements
+      const debugInfo = document.getElementById('debugInfo');
+      const excelSample = document.getElementById('excelSample');
+      const excelType = document.getElementById('excelType');
+      const sheetSample = document.getElementById('sheetSample');
+      const sheetType = document.getElementById('sheetType');
+      const excelLength = document.getElementById('excelLength');
+      const sheetLength = document.getElementById('sheetLength');
+      
+      // Function to update preset info display
+      function updatePresetInfo(presetKey) {
+        const presetInfoElement = document.querySelector('.preset-info p');
+        
+        if (presetKey === 'custom') {
+          presetInfoElement.innerHTML = 'กำลังใช้การตั้งค่าแบบกำหนดเอง คุณสามารถแก้ไขค่าต่างๆ ได้ตามต้องการ';
+          return;
+        }
+        
+        const preset = presets[presetKey];
+        if (!preset) {
+          return;
+        }
+        
+        // Show only a simple message about the preset being applied
+        presetInfoElement.innerHTML = `กำลังใช้การตั้งค่าสำเร็จรูป: <strong>${preset.name}</strong>`;
+      }
+      
+      // Function to apply preset settings
+      function applyPreset(presetKey) {
+        // Reset all form fields to default state
+        document.querySelectorAll('.form-control').forEach(input => {
+          input.classList.remove('preset-field');
+        });
+        
+        if (presetKey === 'custom') {
+          // Enable all input fields for custom settings
+          spreadsheetIdInput.readOnly = false;
+          sheetNameInput.readOnly = false;
+          sheetMatchColumnInput.readOnly = false;
+          sheetUpdateColumnInput.readOnly = false;
+          updatePresetInfo('custom');
+          return;
+        }
+        
+        const preset = presets[presetKey];
+        if (!preset) {
+          console.error('Preset not found:', presetKey);
+          return;
+        }
+        
+        // Apply preset values to form fields
+        spreadsheetIdInput.value = preset.spreadsheetId;
+        sheetNameInput.value = preset.sheetName;
+        sheetMatchColumnInput.value = preset.matchColumn;
+        sheetUpdateColumnInput.value = preset.updateColumn;
+        
+        // Mark fields as preset fields (for styling)
+        spreadsheetIdInput.classList.add('preset-field');
+        sheetNameInput.classList.add('preset-field');
+        sheetMatchColumnInput.classList.add('preset-field');
+        sheetUpdateColumnInput.classList.add('preset-field');
+        
+        // Make preset fields read-only
+        spreadsheetIdInput.readOnly = true;
+        sheetNameInput.readOnly = true;
+        sheetMatchColumnInput.readOnly = true;
+        sheetUpdateColumnInput.readOnly = true;
+        
+        // Update the preset info display
+        updatePresetInfo(presetKey);
+        
+        console.log(`Applied preset: ${preset.name}`);
+      }
+      
+      // Function to detect when a user modifies a preset field
+      function setupPresetFieldListeners() {
+        const presetFields = [spreadsheetIdInput, sheetNameInput, sheetMatchColumnInput, sheetUpdateColumnInput];
+        
+        presetFields.forEach(field => {
+          field.addEventListener('input', function() {
+            // If this is a preset field being modified, switch to custom mode
+            if (field.classList.contains('preset-field')) {
+              presetSelector.value = 'custom';
+              applyPreset('custom');
+            }
+          });
+        });
+      }
+      
+      // Add event listener for preset selector
+      presetSelector.addEventListener('change', function() {
+        applyPreset(this.value);
+      });
+      
+      // Preset is applied dynamically from DOMContentLoaded
+      
+      // Setup listeners for preset fields
+      setupPresetFieldListeners();
+      
+      // Enable process button when file is selected
+      fileInput.addEventListener('change', function(e) {
+        processButton.disabled = !fileInput.files.length;
+        searchAmountButton.disabled = !fileInput.files.length;
+      });
+      
+      // Process button click handler
+      processButton.addEventListener('click', function() {
+        if (!fileInput.files.length) {
+          showStatus('กรุณาเลือกไฟล์ก่อน', 'error');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Process the Excel file
+        processExcelFile(file);
+      });
+      
+      // Search amount button click handler
+      searchAmountButton.addEventListener('click', function() {
+        if (!fileInput.files.length) {
+          showStatus('กรุณาเลือกไฟล์ก่อน', 'error');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Process the Excel file for amount search
+        processExcelFileForAmountSearch(file);
+      });
+    </script>
+    
+    <script>
+      // Helper function to check matches using different comparison methods
+      function checkMatches(comparisonFn) {
+        let matchCount = 0;
+        
+        // Get the selected starting row (1-indexed)
+        let startRow = getSelectedStartRow();
+        
+        // Adjust start row if needed
+        if (excelData.length < startRow) {
+          console.warn(`Excel file has only ${excelData.length} rows, but start row was set to ${startRow}. Adjusting to row 1.`);
+          startRow = 1;
+        }
+        
+        const startIndex = startRow - 1; // Convert to 0-indexed
+        
+        // Log the Excel data structure for debugging
+        console.log(`Excel data has ${excelData.length} rows. Starting from row ${startRow} (index ${startIndex}).`);
+        
+        for (let i = startIndex; i < excelData.length; i++) {
+          if (excelData[i] && excelData[i].length > 0) {
+            const excelVal = excelData[i][0];
+            
+            for (let j = 8; j < Math.min(targetSheetData.length, 30); j++) { // Start from row 9 (index 8)
+              if (targetSheetData[j] && targetSheetData[j].length > 3) {
+                const sheetVal = targetSheetData[j][3];
+                
+                if (comparisonFn(excelVal, sheetVal)) {
+                  console.log(`MATCH FOUND! Excel row ${i+1} matches Sheet row ${j+1}`);
+                  console.log(`Excel: "${excelVal}" | Sheet: "${sheetVal}"`);
+                  matchCount++;
+                  break; // Move to next Excel row after finding a match
+                }
+              }
+            }
+          }
+        }
+        
+        console.log(`Total matches found with this method: ${matchCount}`);
+      }
+    </script>
+    
+    <script>
+      // Function to process Excel file
+      function processExcelFile(file) {
+        showStatus('กำลังอ่านไฟล์ Excel...', 'progress');
+        updateProgress(10);
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            // Parse Excel file using SheetJS with strict text mode
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {
+              type: 'array',
+              cellText: true,  // Force all cells to be read as text
+              cellDates: true,  // Preserve date types
+              cellStyles: true  // Preserve cell styles
+            });
+            
+            // Get first sheet
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Force all cells to be text format
+            if (worksheet['!ref']) {
+              const range = XLSX.utils.decode_range(worksheet['!ref']);
+              for (let r = range.s.r; r <= range.e.r; ++r) {
+                for (let c = range.s.c; c <= range.e.c; ++c) {
+                  const cell_address = {c: c, r: r};
+                  const cell_ref = XLSX.utils.encode_cell(cell_address);
+                  const cell = worksheet[cell_ref];
+                  
+                  if (cell) {
+                    // If the cell has a formatted value, use it
+                    if (cell.w) {
+                      cell.t = 's'; // Set type to string
+                      cell.v = cell.w; // Use the formatted value
+                    } else if (cell.v !== undefined) {
+                      // Otherwise convert the value to string
+                      cell.t = 's';
+                      cell.v = String(cell.v);
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Get the sheet range to understand its structure
+            const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+            console.log("Excel sheet range:", worksheet['!ref']);
+            console.log("Last column:", XLSX.utils.encode_col(range.e.c));
+            console.log("Last row:", range.e.r + 1);
+            
+            // Get merged cells information
+            const mergedCells = worksheet['!merges'] || [];
+            console.log("Merged cells:", mergedCells);
+            
+            // Don't use sheet_to_json, manually extract data to ensure text format
+            excelData = [];
+            if (worksheet['!ref']) {
+              const range = XLSX.utils.decode_range(worksheet['!ref']);
+              for (let r = range.s.r; r <= range.e.r; ++r) {
+                const row = [];
+                for (let c = range.s.c; c <= range.e.c; ++c) {
+                  const cell_address = {c: c, r: r};
+                  const cell_ref = XLSX.utils.encode_cell(cell_address);
+                  const cell = worksheet[cell_ref];
+                  
+                  let cellValue = '';
+                  if (cell) {
+                    // Always use the formatted string value if available
+                    if (cell.w) {
+                      cellValue = cell.w;
+                    } else if (cell.v !== undefined) {
+                      cellValue = String(cell.v);
+                    }
+                    
+                    // Special handling for values that might be codes with dashes
+                    if (typeof cell.v === 'number' && cellValue.indexOf('-') === -1) {
+                      // Check if this might be a code that was converted to a number
+                      const numStr = String(cell.v);
+                      if (numStr.includes('.')) {
+                        const parts = numStr.split('.');
+                        if (parts.length === 2) {
+                          if (parts[1].length === 2) {
+                            // Format like "68-05"
+                            cellValue = `${parts[0]}-${parts[1]}`;
+                            console.log(`Reformatted numeric value: ${cell.v} -> ${cellValue}`);
+                          } else if (parts[1].length === 5) {
+                            // Format like "68-05-00002"
+                            cellValue = `${parts[0]}-${parts[1].substring(0, 2)}-${parts[1].substring(2)}`;
+                            console.log(`Reformatted numeric value: ${cell.v} -> ${cellValue}`);
+                          }
+                        }
+                      }
+                    }
+                  }
+                  
+                  row.push(cellValue);
+                }
+                excelData.push(row);
+              }
+            }
+            
+            // Mark merged cells in our data structure for later reference
+            window.mergedCellsMap = {}; // Global object to track merged cells
+            
+            // Process merged cells to create a map for easy lookup
+            mergedCells.forEach((mergeInfo, index) => {
+              for (let r = mergeInfo.s.r; r <= mergeInfo.e.r; r++) {
+                for (let c = mergeInfo.s.c; c <= mergeInfo.e.c; c++) {
+                  // Skip the top-left cell (which contains the actual value)
+                  if (r === mergeInfo.s.r && c === mergeInfo.s.c) continue;
+                  
+                  // Mark this cell as part of a merged cell
+                  const key = `${r},${c}`;
+                  window.mergedCellsMap[key] = {
+                    mainCell: {r: mergeInfo.s.r, c: mergeInfo.s.c},
+                    mergeIndex: index
+                  };
+                }
+              }
+            });
+            
+            // Check if we got any data
+            if (!excelData || excelData.length === 0) {
+              console.warn("No data extracted from Excel file.");
+            }
+            
+            // If still no data, create a minimal structure
+            if (!excelData || excelData.length === 0) {
+              console.warn("Still no data extracted. Creating minimal structure to avoid errors.");
+              excelData = [['No data found in Excel file']];
+            }
+            
+            showStatus('อ่านไฟล์ Excel เรียบร้อยแล้ว กำลังดึงข้อมูลจาก Google Sheet...', 'progress');
+            updateProgress(30);
+            
+            // Fetch the target Google Sheet data
+            const spreadsheetIdOrUrl = spreadsheetIdInput.value.trim();
+            const spreadsheetId = extractSpreadsheetId(spreadsheetIdOrUrl);
+            const sheetName = sheetNameInput.value.trim();
+            
+            console.log(`Fetching data from spreadsheet ID: ${spreadsheetId}, sheet: ${sheetName}`);
+            
+            // Update the input field with the extracted ID for clarity
+            if (spreadsheetId !== spreadsheetIdOrUrl) {
+              console.log(`Extracted spreadsheet ID from URL: ${spreadsheetId}`);
+              // Don't update the field visually to avoid confusion
+            }
+            
+            google.script.run
+              .withSuccessHandler(function(jsonData) {
+                console.log("Received data from Google Sheet");
+                processTargetSheetData(jsonData);
+              })
+              .withFailureHandler(function(error) {
+                console.error("Failed to get sheet data:", error);
+                showStatus('เกิดข้อผิดพลาดในการดึงข้อมูลจาก Google Sheet: ' + (error.message || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ'), 'error');
+              })
+              .getSheetData(spreadsheetId, sheetName);
+            
+          } catch (error) {
+            showStatus('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: ' + error.message, 'error');
+          }
+        };
+        
+        reader.onerror = function(error) {
+          showStatus('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + error, 'error');
+        };
+        
+        // Read the file as an array buffer
+        reader.readAsArrayBuffer(file);
+      }
+    </script>
+    
+    <script>
+      // Function to process the target sheet data and find matches
+      function processTargetSheetData(jsonData) {
+        try {
+          showStatus('กำลังวิเคราะห์ข้อมูลและค้นหาการจับคู่...', 'progress');
+          updateProgress(50);
+          
+          // Parse JSON data
+          if (!jsonData) {
+            throw new Error("ไม่ได้รับข้อมูลจาก Google Sheet");
+          }
+          
+          let parseError = null;
+          try {
+            // Check if jsonData is already an object (might not need parsing)
+            if (typeof jsonData === 'object' && jsonData !== null) {
+              targetSheetData = jsonData;
+            } else {
+              targetSheetData = JSON.parse(jsonData);
+            }
+            
+            // Convert all values in targetSheetData to strings
+            console.log("Converting all Google Sheet values to strings...");
+            if (Array.isArray(targetSheetData)) {
+              targetSheetData = targetSheetData.map(row => {
+                if (Array.isArray(row)) {
+                  return row.map(cell => {
+                    // Convert all values to strings
+                    if (cell === null || cell === undefined) {
+                      return '';
+                    }
+                    
+                    // Special handling for numbers that might be codes
+                    if (typeof cell === 'number') {
+                      // Convert to string
+                      const cellStr = String(cell);
+                      
+                      // Check if this might be a code with decimal point
+                      if (cellStr.includes('.')) {
+                        const parts = cellStr.split('.');
+                        if (parts.length === 2) {
+                          if (parts[1].length === 2) {
+                            // Format like "68-05"
+                            return `${parts[0]}-${parts[1]}`;
+                          } else if (parts[1].length === 5) {
+                            // Format like "68-05-00002"
+                            return `${parts[0]}-${parts[1].substring(0, 2)}-${parts[1].substring(2)}`;
+                          }
+                        }
+                      }
+                      
+                      return cellStr;
+                    }
+                    
+                    return String(cell);
+                  });
+                }
+                return row;
+              });
+            }
+            
+            console.log("Google Sheet data converted to strings:", targetSheetData);
+          } catch (e) {
+            parseError = e;
+            console.error("Error parsing JSON:", e);
+            
+            // Try to handle the data as a string
+            try {
+              // Sometimes the data might be double-encoded
+              targetSheetData = JSON.parse(JSON.parse(jsonData));
+              
+              // Also convert this data to strings
+              if (Array.isArray(targetSheetData)) {
+                targetSheetData = targetSheetData.map(row => {
+                  if (Array.isArray(row)) {
+                    return row.map(cell => String(cell || ''));
+                  }
+                  return row;
+                });
+              }
+            } catch (e2) {
+              console.error("Second attempt to parse JSON failed:", e2);
+              throw parseError; // Throw the original error
+            }
+          }
+          
+          // Make sure targetSheetData is not null before proceeding
+          if (!targetSheetData) {
+            throw new Error("ไม่สามารถแปลงข้อมูลจาก Google Sheet ได้");
+          }
+          
+          console.log("Target sheet data loaded successfully with " + targetSheetData.length + " rows");
+          
+          // Process the data to find matches
+          findMatches();
+          
+        } catch (error) {
+          showStatus('เกิดข้อผิดพลาดในการประมวลผลข้อมูล: ' + error.message, 'error');
+        }
+      }
+      
+      // Function to find matches between Excel and Sheet data
+      function findMatches() {
+        try {
+          showStatus('กำลังค้นหาการจับคู่ระหว่างข้อมูล...', 'progress');
+          updateProgress(60);
+          
+          // Get the selected comparison method
+          let selectedMethod = 'all'; // Default
+          for (const radio of comparisonMethodRadios) {
+            if (radio.checked) {
+              selectedMethod = radio.value;
+              break;
+            }
+          }
+          
+          // Get column indices from the input fields
+          const excelMatchCol = getColumnIndex(excelMatchColumnInput.value); // Default: A (0)
+          const excelValueCol1 = getColumnIndex(excelValueColumn1Input.value); // Default: F (5)
+          const excelNegativeCol = getColumnIndex(excelNegativeColumnInput.value); // Default: G (6)
+          const excelValueCol2 = getColumnIndex(excelValueColumn2Input.value); // Default: H (7)
+          const sheetMatchCol = getColumnIndex(sheetMatchColumnInput.value); // Default: D (3)
+          
+          // Create an array to store all updates
+          const updates = [];
+          
+          // Create a Map to track matches for duplicate detection
+          const matchMap = new Map();
+          
+          // Process each row in the Excel file
+          for (let i = 0; i < excelData.length; i++) { // Start from the beginning
+            const excelRow = excelData[i];
+            
+            // Check if the row exists
+            if (!excelRow) {
+              console.log("Skipping row " + (i+1) + " because it doesn't exist");
+              continue;
+            }
+            
+            // Log row information for debugging
+            console.log("Row " + (i+1) + " has " + excelRow.length + " columns");
+            
+            // Check if this cell is part of a merged cell (not the main cell)
+            const cellKey = `${i},${excelMatchCol}`;
+            if (window.mergedCellsMap && window.mergedCellsMap[cellKey]) {
+              console.log("Skipping row " + (i+1) + " because match column is part of a merged cell");
+              continue;
+            }
+            
+            // Check if the row has data in match column
+            const excelMatchValue = excelRow[excelMatchCol]; // Match column (0-indexed)
+            
+            // Get value columns (if they exist)
+            let excelValueCol1Value = excelRow.length > excelValueCol1 ? excelRow[excelValueCol1] : null;
+            let excelNegativeColValue = excelRow.length > excelNegativeCol ? excelRow[excelNegativeCol] : null;
+            let excelValueCol2Value = excelRow.length > excelValueCol2 ? excelRow[excelValueCol2] : null;
+            
+            // Check if value columns are part of merged cells
+            const valueCol1Key = `${i},${excelValueCol1}`;
+            const valueCol2Key = `${i},${excelValueCol2}`;
+            const negativeColKey = `${i},${excelNegativeCol}`;
+            
+            // If value column 1 is part of a merged cell, get the value from the main cell
+            if (window.mergedCellsMap && window.mergedCellsMap[valueCol1Key]) {
+              const mainCell = window.mergedCellsMap[valueCol1Key].mainCell;
+              excelValueCol1Value = excelData[mainCell.r][mainCell.c];
+              console.log("Value column 1 is part of a merged cell, using value from main cell:", excelValueCol1Value);
+            }
+            
+            // If negative column is part of a merged cell, get the value from the main cell
+            if (window.mergedCellsMap && window.mergedCellsMap[negativeColKey]) {
+              const mainCell = window.mergedCellsMap[negativeColKey].mainCell;
+              excelNegativeColValue = excelData[mainCell.r][mainCell.c];
+              console.log("Negative column is part of a merged cell, using value from main cell:", excelNegativeColValue);
+            }
+            
+            // If value column 2 is part of a merged cell, get the value from the main cell
+            if (window.mergedCellsMap && window.mergedCellsMap[valueCol2Key]) {
+              const mainCell = window.mergedCellsMap[valueCol2Key].mainCell;
+              excelValueCol2Value = excelData[mainCell.r][mainCell.c];
+              console.log("Value column 2 is part of a merged cell, using value from main cell:", excelValueCol2Value);
+            }
+            
+            // Track which column the value came from
+            let sourceColumn = excelValueColumn2Input.value;
+            
+            // Check if negative column is negative and value column 2 is empty
+            const isNegative = excelNegativeColValue !== null && 
+                               (String(excelNegativeColValue).trim().startsWith('-') || 
+                                (typeof excelNegativeColValue === 'number' && excelNegativeColValue < 0));
+                                
+            const isValueEmpty = excelValueCol2Value === null || excelValueCol2Value === undefined || 
+                            String(excelValueCol2Value).trim() === '' || 
+                            String(excelValueCol2Value).trim() === '0';
+            
+            // Value to use for updates
+            let valueToUse;
+            
+            // If negative column is negative and value column 2 is empty, use value column 1 instead
+            if (isNegative && isValueEmpty && excelValueCol1Value !== null) {
+              console.log("Row " + (i+1) + ": Column " + excelNegativeColumnInput.value + " is negative (" + excelNegativeColValue + 
+                          ") and " + excelValueColumn2Input.value + " is empty. Using column " + 
+                          excelValueColumn1Input.value + " (" + excelValueCol1Value + ") instead.");
+              valueToUse = excelValueCol1Value;
+              sourceColumn = excelValueColumn1Input.value;
+            } else if (excelValueCol2Value === null) {
+              // If value column 2 doesn't exist, check if there's any other data we can use
+              if (excelRow.length > 1) {
+                valueToUse = excelRow[excelRow.length - 1];
+                console.log("Row " + (i+1) + " doesn't have column " + excelValueColumn2Input.value + 
+                            ". Using last available column (" + excelRow.length + ") instead.");
+                sourceColumn = 'Last';
+              } else {
+                valueToUse = null;
+              }
+            } else {
+              valueToUse = excelValueCol2Value;
+            }
+            
+            // Skip empty values
+            if (excelMatchValue === undefined || excelMatchValue === null || excelMatchValue === "" || 
+                valueToUse === undefined || valueToUse === null || valueToUse === "") {
+              console.log("Skipping row " + (i+1) + " because match column or value column is empty");
+              continue;
+            }
+              
+            // Log for debugging
+            console.log("Processing Excel row " + (i+1) + ", Match Col: " + excelMatchValue + ", Value: " + valueToUse);
+            
+            // Look for matches in the target sheet (find ALL matches, not just the first one)
+            const matches = [];
+            
+            for (let j = 0; j < targetSheetData.length; j++) {
+              const targetRow = targetSheetData[j];
+              
+              // Make sure the row has enough columns
+              if (targetRow && targetRow.length > sheetMatchCol) {
+                const targetMatchValue = targetRow[sheetMatchCol]; // Match column in sheet (0-indexed)
+                
+                // Get the selected comparison method
+                let isMatch = false;
+                let matchMethod = '';
+                
+                // Skip empty values in the target sheet
+                if (targetMatchValue === undefined || targetMatchValue === null || targetMatchValue === "") {
+                  continue;
+                }
+                
+                // Convert to strings for comparison and normalize
+                let excelStr = String(excelMatchValue).trim();
+                let targetStr = String(targetMatchValue).trim();
+                
+                // Log the original values for debugging
+                console.log(`Original values - Excel: "${excelStr}" (${typeof excelMatchValue}), Target: "${targetStr}" (${typeof targetMatchValue})`);
+                
+                // Special handling for values that might be codes with dashes (like "68-05-00002")
+                // Function to normalize potential code values
+                function normalizeCodeValue(value, originalValue) {
+                  let result = value;
+                  
+                  // If it's a number or looks like a decimal
+                  if ((typeof originalValue === 'number' || !isNaN(Number(value))) && value.includes('.')) {
+                    const parts = value.split('.');
+                    if (parts.length === 2) {
+                      // Check if this looks like a code that was converted to a decimal
+                      if (parts[1].length === 2) {
+                        // Format like "68-05"
+                        result = `${parts[0]}-${parts[1]}`;
+                        console.log(`Reformatted value: ${value} -> ${result}`);
+                      } else if (parts[1].length === 5) {
+                        // Format like "68-05-00002"
+                        result = `${parts[0]}-${parts[1].substring(0, 2)}-${parts[1].substring(2)}`;
+                        console.log(`Reformatted value: ${value} -> ${result}`);
+                      }
+                    }
+                  }
+                  
+                  return result;
+                }
+                
+                // Normalize both values
+                excelStr = normalizeCodeValue(excelStr, excelMatchValue);
+                targetStr = normalizeCodeValue(targetStr, targetMatchValue);
+                
+                // Log the normalized values
+                console.log(`Normalized values - Excel: "${excelStr}", Target: "${targetStr}"`);
+                
+                // Additional check for values that might be codes with leading zeros
+                // For example, "68-05-00002" might be read as "68-5-2" if leading zeros are stripped
+                function addLeadingZeros(value) {
+                  if (value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts.length === 3) {
+                      // Format like "XX-YY-ZZZZZ"
+                      const part1 = parts[0].padStart(2, '0');
+                      const part2 = parts[1].padStart(2, '0');
+                      const part3 = parts[2].padStart(5, '0');
+                      return `${part1}-${part2}-${part3}`;
+                    } else if (parts.length === 2) {
+                      // Format like "XX-YY"
+                      const part1 = parts[0].padStart(2, '0');
+                      const part2 = parts[1].padStart(2, '0');
+                      return `${part1}-${part2}`;
+                    }
+                  }
+                  return value;
+                }
+                
+                // Normalize with leading zeros
+                const excelStrWithZeros = addLeadingZeros(excelStr);
+                const targetStrWithZeros = addLeadingZeros(targetStr);
+                
+                // If the normalized values are different, log them
+                if (excelStrWithZeros !== excelStr || targetStrWithZeros !== targetStr) {
+                  console.log(`Values with leading zeros - Excel: "${excelStrWithZeros}", Target: "${targetStrWithZeros}"`);
+                  excelStr = excelStrWithZeros;
+                  targetStr = targetStrWithZeros;
+                }
+                
+                if (selectedMethod === 'exact' || selectedMethod === 'all') {
+                  // Method 1: Direct string comparison after trim (basic)
+                  if (excelStr === targetStr) {
+                    isMatch = true;
+                    matchMethod = 'exact';
+                    console.log("Match found (exact)! Excel " + excelMatchColumnInput.value + ": \"" + excelStr + 
+                                "\" = Target " + sheetMatchColumnInput.value + ": \"" + targetStr + "\"");
+                  }
+                }
+                
+                if (!isMatch && (selectedMethod === 'numeric' || selectedMethod === 'all')) {
+                  // Method 2: Compare as text even if they are numbers
+                  // Skip empty or missing values
+                  if (excelStr && targetStr) {
+                    // Convert both to string and compare directly
+                    if (excelStr === targetStr) {
+                      isMatch = true;
+                      matchMethod = 'numeric';
+                      console.log("Match found (text comparison)! Excel " + excelMatchColumnInput.value + ": \"" + excelStr + 
+                                  "\" = Target " + sheetMatchColumnInput.value + ": \"" + 
+                                  targetStr + "\"");
+                    }
+                  }
+                }
+                
+                if (!isMatch && (selectedMethod === 'caseInsensitive' || selectedMethod === 'all')) {
+                  // Method 3: Case insensitive comparison
+                  if (excelStr.toLowerCase() === targetStr.toLowerCase()) {
+                    isMatch = true;
+                    matchMethod = 'caseInsensitive';
+                    console.log("Match found (case insensitive)! Excel " + excelMatchColumnInput.value + ": \"" + 
+                                excelStr + "\" = Target " + sheetMatchColumnInput.value + ": \"" + targetStr + "\"");
+                  }
+                }
+                
+                if (!isMatch && (selectedMethod === 'ignoreSpaces' || selectedMethod === 'all')) {
+                  // Method 4: Ignore all whitespace
+                  const excelNoSpace = excelStr.replace(/\s+/g, '');
+                  const targetNoSpace = targetStr.replace(/\s+/g, '');
+                  
+                  if (excelNoSpace === targetNoSpace) {
+                    isMatch = true;
+                    matchMethod = 'ignoreSpaces';
+                    console.log("Match found (no spaces)! Excel " + excelMatchColumnInput.value + ": \"" + 
+                                excelStr + "\" = Target " + sheetMatchColumnInput.value + ": \"" + targetStr + "\"");
+                  }
+                }
+                
+                // Log for debugging if no match
+                if (!isMatch) {
+                  console.log("No match: Excel=\"" + excelStr + "\" (" + typeof excelMatchValue + 
+                              ") with Sheet=\"" + targetStr + "\" (" + typeof targetMatchValue + ")");
+                }
+                
+                if (isMatch) {
+                  // Add to matches array
+                  matches.push({
+                    row: j + 1, // Convert to 1-indexed for Sheets API
+                    value: valueToUse,
+                    matchValue: targetStr,
+                    matchMethod: matchMethod,
+                    sourceColumn: sourceColumn // Add source column information
+                  });
+                  
+                  // Track in the matchMap for duplicate detection
+                  if (!matchMap.has(targetStr)) {
+                    matchMap.set(targetStr, []);
+                  }
+                  matchMap.get(targetStr).push({
+                    row: j + 1,
+                    value: valueToUse,
+                    matchValue: targetStr,
+                    sourceColumn: sourceColumn // Add source column information
+                  });
+                }
+              }
+            }
+            
+            // Add all matches to the updates array
+            if (matches.length > 0) {
+              for (let j = 0; j < matches.length; j++) {
+                updates.push(matches[j]);
+              }
+              console.log("Found " + matches.length + " matches for Excel row " + (i+1));
+            }
+          }
+          
+          // Count duplicates
+          let duplicateCount = 0;
+          for (const [key, value] of matchMap.entries()) {
+            if (value.length > 1) {
+              duplicateCount++;
+              console.log(`Duplicate found: "${key}" appears ${value.length} times`);
+            }
+          }
+          
+          showStatus("พบการจับคู่ " + updates.length + " รายการ (รวมค่าซ้ำ " + duplicateCount + " รายการ) พร้อมอัพเดทแล้ว...", 'progress');
+          updateProgress(75);
+          
+          // Count how many updates use alternative column values
+          let alternativeColumnCount = 0;
+          for (const update of updates) {
+            if (update.sourceColumn === excelValueColumn1Input.value) {
+              alternativeColumnCount++;
+            }
+          }
+          
+          // Update the matches found display
+          matchesFoundElement.textContent = updates.length;
+          duplicatesFoundElement.textContent = duplicateCount;
+          columnFCountElement.textContent = alternativeColumnCount;
+          
+          // Update the comparison method used
+          comparisonMethodUsedElement.textContent = getSelectedComparisonMethodName();
+          
+          // If we have matches, show the confirmation dialog
+          if (updates.length > 0) {
+            // Populate the confirmation dialog
+            document.getElementById('confirmMatchesFound').textContent = updates.length;
+            document.getElementById('confirmDuplicatesFound').textContent = duplicateCount;
+            document.getElementById('confirmColumnFCount').textContent = alternativeColumnCount;
+            
+            // Clear the preview table
+            const previewTableBody = document.getElementById('previewTableBody');
+            previewTableBody.innerHTML = '';
+            
+            // Add up to 10 rows to the preview table
+            const previewLimit = Math.min(updates.length, 10);
+            for (let i = 0; i < previewLimit; i++) {
+              const update = updates[i];
+              const row = document.createElement('tr');
+              
+              // Add row number cell
+              const rowCell = document.createElement('td');
+              rowCell.style.padding = '8px';
+              rowCell.style.borderBottom = '1px solid #ddd';
+              rowCell.textContent = update.row;
+              row.appendChild(rowCell);
+              
+              // Add match value cell
+              const matchCell = document.createElement('td');
+              matchCell.style.padding = '8px';
+              matchCell.style.borderBottom = '1px solid #ddd';
+              matchCell.textContent = update.matchValue;
+              row.appendChild(matchCell);
+              
+              // Add new value cell
+              const valueCell = document.createElement('td');
+              valueCell.style.padding = '8px';
+              valueCell.style.borderBottom = '1px solid #ddd';
+              valueCell.textContent = update.value;
+              
+              // If this value came from alternative column (due to negative check and empty value), highlight it
+              if (update.sourceColumn === excelValueColumn1Input.value) {
+                valueCell.style.backgroundColor = '#fff3cd';
+                valueCell.title = `ค่าจากคอลัมน์ ${update.sourceColumn} (${excelNegativeColumnInput.value} เป็นลบและ ${excelValueColumn2Input.value} ว่างเปล่า)`;
+                valueCell.textContent += ` (จากคอลัมน์ ${update.sourceColumn})`;
+              }
+              
+              row.appendChild(valueCell);
+              
+              previewTableBody.appendChild(row);
+            }
+            
+            // If there are more rows than shown in the preview, add a message
+            if (updates.length > previewLimit) {
+              const row = document.createElement('tr');
+              const cell = document.createElement('td');
+              cell.colSpan = 3;
+              cell.style.padding = '8px';
+              cell.style.borderBottom = '1px solid #ddd';
+              cell.style.textAlign = 'center';
+              cell.style.fontStyle = 'italic';
+              cell.textContent = "... และอีก " + (updates.length - previewLimit) + " แถว";
+              row.appendChild(cell);
+              previewTableBody.appendChild(row);
+            }
+            
+            // Show the confirmation dialog
+            document.getElementById('confirmationDialog').style.display = 'block';
+            
+            // Add event listeners for the confirmation buttons
+            document.getElementById('cancelUpdateBtn').addEventListener('click', function() {
+              document.getElementById('confirmationDialog').style.display = 'none';
+              showStatus('การอัพเดทถูกยกเลิก', 'error');
+            });
+            
+            document.getElementById('confirmUpdateBtn').addEventListener('click', function() {
+              document.getElementById('confirmationDialog').style.display = 'none';
+              sendUpdatesToServer(updates);
+            });
+          } else {
+            // No matches found
+            updateProgress(100);
+            showStatus('ไม่พบข้อมูลที่ตรงกันสำหรับการอัพเดท', 'success');
+            matchesFoundElement.textContent = '0';
+            duplicatesFoundElement.textContent = '0';
+            updatedCountElement.textContent = '0';
+            skippedCountElement.textContent = '0';
+            comparisonMethodUsedElement.textContent = getSelectedComparisonMethodName();
+            resultStats.style.display = 'block';
+            
+            // Show a more detailed message if we have data but no matches
+            if (excelData && excelData.length > 0 && targetSheetData && targetSheetData.length > 0) {
+              console.log(`No matches found between ${excelData.length} Excel rows and ${targetSheetData.length} Sheet rows.`);
+            }
+          }
+        } catch (error) {
+          showStatus('เกิดข้อผิดพลาดในการประมวลผลข้อมูล: ' + error.message, 'error');
+        }
+      }
+      
+      // Function to process Excel file for amount search
+      function processExcelFileForAmountSearch(file) {
+        showStatus('กำลังอ่านไฟล์...', 'progress');
+        updateProgress(10);
+        
+        // Hide previous results
+        resultStats.style.display = 'none';
+        amountSearchResults.style.display = 'none';
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            showStatus('กำลังประมวลผลข้อมูล Excel...', 'progress');
+            updateProgress(30);
+            
+            let excelData;
+            
+            // Check if it's an HTML file
+            if (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')) {
+              // Parse HTML file
+              const htmlContent = e.target.result;
+              excelData = parseHTMLTable(htmlContent);
+            } else {
+              // Parse Excel file
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, {type: 'array'});
+              
+              // Get the first sheet
+              const firstSheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[firstSheetName];
+              
+              // Convert to JSON
+              excelData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            }
+            
+            console.log('Excel data loaded:', excelData.length, 'rows');
+            updateProgress(50);
+            
+            // Perform amount search
+            performAmountSearch(excelData);
+            
+          } catch (error) {
+            showStatus('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + error.message, 'error');
+            console.error('Error reading file:', error);
+          }
+        };
+        
+        // Read file based on type
+        if (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')) {
+          reader.readAsText(file, 'UTF-8');
+        } else {
+          reader.readAsArrayBuffer(file);
+        }
+      }
+      
+      // Function to perform amount search
+      function performAmountSearch(excelData) {
+        showStatus('กำลังค้นหาและเปรียบเทียบยอดเงิน...', 'progress');
+        updateProgress(70);
+        
+        // Get configuration values
+        const spreadsheetIdOrUrl = spreadsheetIdInput.value.trim();
+        const spreadsheetId = extractSpreadsheetId(spreadsheetIdOrUrl);
+        const sheetName = sheetNameInput.value.trim();
+        
+        const config = {
+          spreadsheetId: spreadsheetId,
+          sheetName: sheetName
+        };
+        
+        console.log(`Performing amount search with spreadsheet ID: ${config.spreadsheetId}, sheet: ${config.sheetName}`);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            updateProgress(100);
+            
+            if (result.success) {
+              displayAmountSearchResults(result.results);
+              showStatus(`ค้นหาเสร็จสิ้น: ตรวจสอบ ${result.results.totalChecked} รายการ, ตรงกัน ${result.results.matched} รายการ, ไม่ตรงกัน ${result.results.unmatched} รายการ`, 'success');
+            } else {
+              showStatus('เกิดข้อผิดพลาดในการค้นหายอดเงิน: ' + result.message, 'error');
+            }
+          })
+          .withFailureHandler(function(error) {
+            showStatus('เกิดข้อผิดพลาดในการค้นหายอดเงิน: ' + (error.message || 'ไม่ทราบสาเหตุ'), 'error');
+            console.error('Error in amount search:', error);
+          })
+          .searchAmounts(JSON.stringify(excelData), JSON.stringify(config));
+      }
+      
+      // Function to display amount search results with detailed information
+      function displayAmountSearchResults(results) {
+        // Update statistics
+        totalCheckedItemsElement.textContent = results.totalChecked;
+        matchedItemsElement.textContent = results.matched;
+        unmatchedItemsElement.textContent = results.unmatched;
+        
+        // Clear previous items
+        matchedItemsContainer.innerHTML = '';
+        unmatchedItemsContainer.innerHTML = '';
+        
+        // Display matched items
+        if (results.matchedItems && results.matchedItems.length > 0) {
+          matchedList.style.display = 'block';
+          
+          results.matchedItems.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.style.marginBottom = '8px';
+            itemDiv.style.padding = '8px';
+            itemDiv.style.backgroundColor = '#fff';
+            itemDiv.style.border = '1px solid #34a853';
+            itemDiv.style.borderRadius = '4px';
+            itemDiv.style.fontSize = '12px';
+            
+            let content = `<strong>${index + 1}. ${item.excelRowA}</strong> (แถว Excel ${item.excelRowNumber})<br>`;
+            content += `<span style="color: #34a853;">✓ ยอดเงินตรงกัน</span><br>`;
+            content += `Excel คอลัมน์ G: ${formatNumber(item.excelColumnCZ)}<br>`;
+            content += `Google Sheet รวม: ${formatNumber(item.sheetSum)}<br>`;
+            content += `<small>พบ ${item.matchingRowsCount} แถวที่ตรงกัน</small>`;
+            
+            itemDiv.innerHTML = content;
+            matchedItemsContainer.appendChild(itemDiv);
+          });
+        } else {
+          matchedList.style.display = 'none';
+        }
+        
+        // Display unmatched items
+        if (results.unmatchedItems && results.unmatchedItems.length > 0) {
+          results.unmatchedItems.forEach((item, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.style.marginBottom = '10px';
+            itemDiv.style.padding = '10px';
+            itemDiv.style.backgroundColor = '#fff';
+            itemDiv.style.border = '1px solid #ea4335';
+            itemDiv.style.borderRadius = '4px';
+            itemDiv.style.fontSize = '12px';
+            
+            let content = `<strong>${index + 1}. ${item.excelRowA}</strong> (แถว Excel ${item.excelRowNumber})<br>`;
+            
+            if (item.noMatch) {
+              content += `<span style="color: #ea4335;">✗ ไม่พบข้อมูลที่ตรงกันใน Google Sheet</span><br>`;
+              content += `Excel คอลัมน์ G: ${formatNumber(item.excelColumnCZ)}`;
+            } else {
+              content += `Excel คอลัมน์ G: ${formatNumber(item.excelColumnCZ)}<br>`;
+              content += `Google Sheet รวม: ${formatNumber(item.sheetSum)}<br>`;
+              
+              const diffColor = item.difference >= 0 ? '#ff9800' : '#ea4335';
+              content += `ส่วนต่าง: <span style="color: ${diffColor}; font-weight: bold;">${formatNumber(item.difference)}</span><br>`;
+              content += `<small>พบ ${item.matchingRowsCount} แถวที่ตรงกัน:</small><br>`;
+              
+              // Show matching rows details
+              if (item.matchingRows && item.matchingRows.length > 0) {
+                content += `<div style="margin-top: 5px; padding: 5px; background-color: #f8f9fa; border-radius: 3px;">`;
+                item.matchingRows.forEach((row, rowIndex) => {
+                  content += `<small>แถว ${row.rowIndex}: ${row.columnF} (คอลัมน์ B: ${row.columnB || 'ว่าง'}) = ${formatNumber(row.columnDB)}</small>`;
+                  if (rowIndex < item.matchingRows.length - 1) content += '<br>';
+                });
+                content += `</div>`;
+              }
+            }
+            
+            itemDiv.innerHTML = content;
+            unmatchedItemsContainer.appendChild(itemDiv);
+          });
+        } else {
+          unmatchedItemsContainer.innerHTML = '<p style="text-align: center; color: #34a853; margin: 20px 0;">ไม่พบรายการที่ไม่ตรงกัน ทุกรายการตรงกันหมด!</p>';
+        }
+        
+        // Show results
+        amountSearchResults.style.display = 'block';
+      }
+      
+      // Function to parse HTML table data
+      function parseHTMLTable(htmlContent) {
+        console.log("Parsing HTML table data...");
+        
+        // Create a temporary DOM element to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        
+        // Find the main data table (look for table with id="bdg_plan_annual" or class containing "table")
+        let table = tempDiv.querySelector('#bdg_plan_annual') || 
+                    tempDiv.querySelector('table.table') || 
+                    tempDiv.querySelector('table');
+        
+        if (!table) {
+          console.error("No table found in HTML content");
+          return [['No table found in HTML file']];
+        }
+        
+        console.log("Found table:", table);
+        
+        const rows = [];
+        
+        // Get header row from thead
+        const headerRow = table.querySelector('thead tr');
+        if (headerRow) {
+          const headerCells = headerRow.querySelectorAll('th');
+          const headerData = Array.from(headerCells).map(cell => cell.textContent.trim());
+          rows.push(headerData);
+          console.log("Header row:", headerData);
+        }
+        
+        // Get data rows from tbody
+        const tbody = table.querySelector('tbody');
+        if (tbody) {
+          const dataRows = tbody.querySelectorAll('tr');
+          console.log(`Found ${dataRows.length} data rows`);
+          
+          dataRows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            const rowData = Array.from(cells).map(cell => {
+              // Clean up the cell content - remove HTML comments and extra whitespace
+              let content = cell.textContent.trim();
+              // Remove any remaining HTML artifacts
+              content = content.replace(/<!--.*?-->/g, '').trim();
+              return content;
+            });
+            
+            // Only add rows that have data
+            if (rowData.some(cell => cell !== '')) {
+              rows.push(rowData);
+              if (index < 3) { // Log first few rows for debugging
+                console.log(`Data row ${index + 1}:`, rowData);
+              }
+            }
+          });
+        }
+        
+        console.log(`Total rows extracted: ${rows.length}`);
+        return rows;
+      }
+
+      // Helper function to format numbers
+      function formatNumber(num) {
+        if (num === null || num === undefined || num === '') return '0';
+        if (typeof num === 'string' && num.trim() === '') return '0';
+        
+        const number = parseFloat(num);
+        if (isNaN(number)) return num.toString();
+        
+        return number.toLocaleString('th-TH', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+      
+      // Function to send updates to the server
+      function sendUpdatesToServer(updates) {
+        showStatus(`กำลังส่งการอัพเดท ${updates.length} รายการไปยัง Google Sheet...`, 'progress');
+        
+        // Get configuration values
+        const spreadsheetIdOrUrl = spreadsheetIdInput.value.trim();
+        const spreadsheetId = extractSpreadsheetId(spreadsheetIdOrUrl);
+        
+        const config = {
+          spreadsheetId: spreadsheetId,
+          sheetName: sheetNameInput.value.trim(),
+          updateColumn: sheetUpdateColumnInput.value.trim(),
+          alternativeColumn: excelValueColumn1Input.value.trim()
+        };
+        
+        console.log(`Sending updates to spreadsheet ID: ${config.spreadsheetId}, sheet: ${config.sheetName}, column: ${config.updateColumn}`);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            updateProgress(100);
+            showStatus(result.message, result.success ? 'success' : 'error');
+            
+            // Display detailed statistics
+            if (result.success) {
+              updatedCountElement.textContent = result.updatedCount || 0;
+              skippedCountElement.textContent = result.skippedCount || 0;
+              columnFCountElement.textContent = result.columnFCount || 0;
+              resultStats.style.display = 'block';
+            }
+          })
+          .withFailureHandler(function(error) {
+            showStatus('เกิดข้อผิดพลาดในการอัพเดทชีท: ' + (error.message || 'ไม่ทราบสาเหตุ'), 'error');
+          })
+          .updateSheetData(JSON.stringify(updates), JSON.stringify(config));
+      }
+      
+      // Initialize event listeners when the page loads
+      window.addEventListener('load', function() {
+        // Start row selection removed - always starts from row 1
+        
+        // "Show More Samples" button has been disabled
+        // if (showMoreSamplesBtn) {
+        //   showMoreSamplesBtn.addEventListener('click', showMoreSamples);
+        // }
+      });
+      
+      // Function to show status messages
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = 'status ' + type;
+        statusMessage.style.display = 'block';
+      }
+      
+      // Function to update progress bar
+      function updateProgress(percent) {
+        progressBar.style.display = 'block';
+        progressBarFill.style.width = percent + '%';
+      }
+    </script>
+  </body>
+</html>
