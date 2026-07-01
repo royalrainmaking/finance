@@ -1121,6 +1121,10 @@
           <span class="material-symbols-outlined" style="color:var(--primary);">note_add</span>
           <span>กรอกข้อมูล (DD)</span>
         </button>
+        <button class="action-btn" id="btn-change-to-po" style="border-color:#d1fae5;" onclick="doAction('change-to-po')">
+          <span class="material-symbols-outlined" style="color:#059669;">local_mall</span>
+          <span style="color:#059669;">เปลี่ยนเป็น PO</span>
+        </button>
       </div>
       <button class="modal-btn"
         style="background:#f8fafc; color:var(--text-main); margin-top:24px; width:100%; border:1px solid #e2e8f0;"
@@ -1185,6 +1189,10 @@
       <div class="nav-item" id="nav-update-dd" onclick="setView('update-dd', this)">
         <span class="material-symbols-outlined">note_add</span>
         <span>กรอกข้อมูล (DD)</span>
+      </div>
+      <div class="nav-item" id="nav-change-to-po" onclick="setView('change-to-po', this)">
+        <span class="material-symbols-outlined">local_mall</span>
+        <span>เปลี่ยนรายการเป็น PO</span>
       </div>
 
       <div class="nav-category">เครื่องมือเสริม</div>
@@ -1822,6 +1830,41 @@
         </div>
       </div>
 
+      <!-- CHANGE TO PO -->
+      <div id="view-change-to-po" class="app-view">
+        <div class="form-wrapper">
+          <form id="changeToPoForm">
+            <h2 style="margin-bottom:20px; color:#059669; display:flex; align-items:center; gap:10px;">
+              <span class="material-symbols-outlined">local_mall</span>
+              เปลี่ยนรายการกันเงินเป็น PO
+            </h2>
+            <div style="background:#ecfdf5; border:1px solid #6ee7b7; border-radius:12px; padding:20px; margin-bottom:20px;">
+              <p style="font-size:13px; color:#065f46; line-height:1.6; margin:0;">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; margin-right:4px;">info</span>
+                ระบบจะเปลี่ยนประเภทรายการนี้จาก <b>"ปกติ (Normal)"</b> ให้เป็น <b>"PO (Purchase Order)"</b>
+                โดยจะบันทึก <b>"PO"</b> ลงในคอลัมน์ B (หมายเหตุ) และคอลัมน์ F (เลขที่ระบบ)
+              </p>
+            </div>
+            <div class="field full" style="margin-bottom:15px;">
+              <label>ค้นหา ID หรือเลขที่หนังสือ ที่ต้องการเปลี่ยนเป็น PO</label>
+              <input type="text" id="cpoSearchInput" oninput="omniSearch(this.value, 'CPO')" placeholder="ID / เลขที่หนังสือ...">
+              <div id="prvCPO" class="preview-box"></div>
+              <input type="hidden" name="id" id="hiddenIdCPO">
+            </div>
+            <div id="cpoFields" style="display:none;">
+              <div class="field full" style="margin-bottom:15px;">
+                <label>หมายเหตุเพิ่มเติม (ไม่บังคับ)</label>
+                <input type="text" name="poRemark" id="cpoRemark" placeholder="เช่น เลข PO อ้างอิง...">
+              </div>
+              <button type="submit" id="btnCPO" class="submit-btn" style="background:#059669 !important;" disabled>
+                <span class="material-symbols-outlined" style="vertical-align:middle; margin-right:6px;">local_mall</span>
+                ยืนยันเปลี่ยนรายการเป็น PO
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- SEARCH & HISTORY -->
       <div id="view-search" class="app-view">
         <div class="search-box">
@@ -2212,8 +2255,30 @@
         if (view === 'E') loadEdit(match.id);
         else if (view === 'RA') loadReserveAdd(match.id);
         else if (view === 'UDD') loadUpdateDD(match.id);
+        else if (view === 'CPO') loadChangeToPO(match.id);
         else validateSearch(view, match);
       } else { prv.innerHTML = '<div class="preview-card error" style="text-align:center;">❌ ไม่พบข้อมูลจาก ID หรือ เลขหนังสือนี้</div>'; prv.style.display = 'block'; }
+    }
+
+    function loadChangeToPO(id) {
+      const e = cache.entries.find(x => x.id == id);
+      const prv = document.getElementById('prvCPO');
+      const flds = document.getElementById('cpoFields');
+      const btn = document.getElementById('btnCPO');
+      if (!e) return;
+
+      const isPO = (e.type && e.type.toString().toUpperCase() === 'PO') || (e.colF && e.colF.toString().toUpperCase() === 'PO');
+      const isLiquidated = e.colF && e.colF.toString().trim() !== '' && !isPO;
+
+      let errMsg = '';
+      if (isPO) errMsg = '⚠️ รายการนี้เป็น PO อยู่แล้ว ไม่จำเป็นต้องเปลี่ยน';
+      else if (isLiquidated) errMsg = '⚠️ รายการนี้ถูกตัดยอดแล้ว ไม่สามารถเปลี่ยนเป็น PO ได้';
+
+      prv.innerHTML = createPreviewHTML(e, !!errMsg, errMsg);
+      prv.style.display = 'block';
+      flds.style.display = errMsg ? 'none' : 'block';
+      if (btn) btn.disabled = !!errMsg;
+      document.getElementById('cpoRemark').value = '';
     }
 
     function loadUpdateDD(id) {
@@ -2912,6 +2977,7 @@
       document.getElementById('actionIdDisplay').innerText = '#' + id;
 
       const isLiquidated = e && e.colF && e.colF.toString().trim() !== "" && e.colF.toString().trim().toUpperCase() !== "PO";
+      const isPO = e && ((e.type && e.type.toString().toUpperCase() === 'PO') || (e.colF && e.colF.toString().toUpperCase() === 'PO'));
 
       // Control Action Visibility
       document.getElementById('btn-deduct').style.display = isLiquidated ? 'none' : 'flex';
@@ -2923,6 +2989,10 @@
       document.getElementById('btn-edit').style.display = 'flex';
       document.getElementById('btn-deduct-add').style.display = 'flex';
       document.getElementById('btn-update-dd').style.display = 'flex';
+
+      // Show "Change to PO" only for non-PO, non-liquidated items
+      const btnCPO = document.getElementById('btn-change-to-po');
+      if (btnCPO) btnCPO.style.display = (!isPO && !isLiquidated) ? 'flex' : 'none';
 
       document.getElementById('actionOverlay').style.display = 'flex';
     }
@@ -2953,7 +3023,8 @@
         'reserve-add': 'กันเงินเพิ่มเติม',
         'cancel': 'ยกเลิกรายการกันเงิน',
         'edit': 'แก้ไขข้อมูลรายการ',
-        'update-dd': 'กรอกข้อมูล (DD)'
+        'update-dd': 'กรอกข้อมูล (DD)',
+        'change-to-po': 'เปลี่ยนรายการเป็น PO'
       };
       if (titles[act]) document.getElementById('viewTitle').innerText = titles[act];
 
@@ -2962,9 +3033,7 @@
       else if (act === 'deduct-add') searchInputId = 'daSearchInput';
       else if (act === 'cancel') searchInputId = 'cancelSearchId';
       else if (act === 'offset') searchInputId = 'offsetSearchId';
-
       else if (act === 'edit') {
-        // Special case for edit since it doesn't have a fixed search input ID in the HTML
         const editInput = document.querySelector('#view-edit input[placeholder*="ID"]');
         if (editInput) {
           editInput.value = selectedId;
@@ -2974,17 +3043,22 @@
       }
       else if (act === 'reserve-add') searchInputId = 'raSearchInput';
       else if (act === 'update-dd') searchInputId = 'uddSearchId';
+      else if (act === 'change-to-po') searchInputId = 'cpoSearchInput';
 
       if (searchInputId) {
         const input = document.getElementById(searchInputId);
         if (input) {
           input.value = selectedId;
-          const vCode = act === 'deduct' ? 'D' : (act === 'deduct-add' ? 'DA' : (act === 'offset' ? 'O' : (act === 'cancel' ? 'C' : (act === 'update-dd' ? 'UDD' : 'RA'))));
+          const vCode = act === 'deduct' ? 'D'
+            : act === 'deduct-add' ? 'DA'
+            : act === 'offset' ? 'O'
+            : act === 'cancel' ? 'C'
+            : act === 'update-dd' ? 'UDD'
+            : act === 'change-to-po' ? 'CPO'
+            : 'RA';
           omniSearch(selectedId, vCode);
-
         }
       }
-
     }
 
     document.getElementById('reserveForm').onsubmit = async (e) => { e.preventDefault(); const r = await call('submitReserve', Object.fromEntries(new FormData(e.target))); if (r?.success) { showModal('สำเร็จ', 'บันทึกเรียบร้อย ID: ' + r.id); setView('table'); init(); e.target.reset(); } };
@@ -2998,6 +3072,7 @@
     document.getElementById('editForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdate', data); if (r?.success) { showModal('สำเร็จ', 'แก้ไขข้อมูลเรียบร้อย' + (data.id ? ' ID: ' + data.id : '')); setView('table'); init(); e.target.reset(); } };
     document.getElementById('reserveDeductForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); data.col = data.cat; const r = await call('submitReserveAndDeduct', data); if (r?.success) { showModal('สำเร็จ', 'บันทึกรายการด่วนเรียบร้อย ID: ' + r.id); init(); e.target.reset(); } };
     document.getElementById('updateDdForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitUpdateDD', data); if (r?.success) { showModal('สำเร็จ', 'บันทึกข้อมูลคอลัมน์ DD เรียบร้อย ID: ' + data.id); setView('table'); init(); e.target.reset(); document.getElementById('updateDdFields').style.display = 'none'; document.getElementById('prvUDD').style.display = 'none'; } };
+    document.getElementById('changeToPoForm').onsubmit = async (e) => { e.preventDefault(); const data = Object.fromEntries(new FormData(e.target)); const r = await call('submitChangeToPO', data); if (r?.success) { showModal('สำเร็จ ✅', 'เปลี่ยนรายการเป็น PO เรียบร้อย ID: ' + data.id); setView('table', document.getElementById('nav-table')); init(); e.target.reset(); document.getElementById('cpoFields').style.display = 'none'; document.getElementById('prvCPO').style.display = 'none'; } };
 
     window.onload = () => {
       const input = document.getElementById('apiInput');
